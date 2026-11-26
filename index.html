@@ -111,6 +111,11 @@ html.dk .ac button{color:#06210f}
 #modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
 #modal .mb{background:var(--cd);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px;max-height:88vh;overflow:auto}
 #modal .mb h3{margin:0 0 8px}
+.surbtn{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--cd);font-size:16px;text-align:start;cursor:pointer}
+.surl{max-height:50vh;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.surit{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--cd);cursor:pointer;text-align:start}
+.surit.on{border-color:#1f6b4a;background:rgba(31,107,74,.12);font-weight:700}
+.surit small{opacity:.6}
 #modal .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 #modal .acts .btn{flex:1;min-width:120px}
 @media(min-width:600px){#modal{align-items:center}#modal .mb{border-radius:18px}}
@@ -528,12 +533,12 @@ A.adk=el=>{const k=+el.dataset.v;ui.cnt={};let h="";HM_A.forEach((a,i)=>{if(a[2]
 A.adc=el=>{const i=+el.dataset.i,a=HM_A[i];let c=ui.cnt[i]||0;if(c>=a[1])return;c++;ui.cnt[i]=c;if(c>=a[1]){el.textContent="تم ✓";el.className="dn"}else el.textContent="اضغط للعدّ · "+c+" / "+a[1]};
 
 function sumText(id){const d=rd(S.dt,id);if(!d)return"لم يُسجَّل بعد";if(d.att==3)return"غائب";if(d.att>=1)return d.att==2?"لم يسمّع (معذور)":"لم يسمّع";const t=ents(d).map(ent).filter(Boolean).join(" + ");return t||(d.ok?"حاضر":"لم يُسجَّل بعد")}
-function pgSel(id,j,e){let o='<option value="">'+(e.sur>=0&&!e.na?"تلقائي ("+epg(e)+")":"—")+"</option>",f=false;for(let v=0.25;v<=20;v+=0.25){const sel=e.pg==v;if(sel)f=true;o+='<option value="'+v+'"'+(sel?" selected":"")+">"+v+"</option>"}if(e.pg&&!f)o+='<option value="'+e.pg+'" selected>'+e.pg+"</option>";
+function pgSel(id,j,e){let o='<option value="">'+(e.sur>=0&&!e.na&&epg(e)>0?epg(e)+" (تلقائي)":"—")+"</option>",f=false;for(let v=0.25;v<=20;v+=0.25){const sel=e.pg==v;if(sel)f=true;o+='<option value="'+v+'"'+(sel?" selected":"")+">"+v+"</option>"}if(e.pg&&!f)o+='<option value="'+e.pg+'" selected>'+e.pg+"</option>";
  return'<select data-c="pg" data-id="'+id+'" data-j="'+j+'" aria-label="عدد الصفحات">'+o+"</select>"}
 function ayOpts(e,k){const Tt=e.sur>=0?AYC[e.sur]:0;let o='<option value="">'+(k=="fa"?"من آية":"إلى آية")+"</option>";for(let v=1;v<=Tt;v++)o+='<option value="'+v+'"'+(e[k]==v?" selected":"")+">"+v+"</option>";return o}
 function entryHtml(id,j,e,scSel){const a='data-id="'+id+'" data-j="'+j+'"',on=e.sur>=0;
  /* right to left: surah + type (small), then from-ayah, to-ayah, pages, rating */
- return'<div class="row2"><div><label>السورة</label><select data-c="sur" '+a+' aria-label="السورة"><option value="-1">—</option>'+optL(SUR,e.sur)+'</select></div><div><label>النوع</label><select data-c="hfs" '+a+' aria-label="النوع (حفظ أو مراجعة)">'+["—","حفظ","مراجعة"].map((t,v)=>'<option value="'+v+'"'+((e.hf||0)==v?" selected":"")+">"+t+"</option>").join("")+"</select></div></div>"+
+ return'<div class="row2"><div><label>السورة</label><button type="button" class="surbtn" data-a="surPick" '+a+' aria-label="السورة" aria-haspopup="dialog"><span>'+(e.sur>=0?(e.sur+1)+". "+esc(SUR[e.sur]):"— اختر السورة —")+'</span><span aria-hidden="true">▾</span></button></div><div><label>النوع</label><select data-c="hfs" '+a+' aria-label="النوع (حفظ أو مراجعة)">'+["—","حفظ","مراجعة"].map((t,v)=>'<option value="'+v+'"'+((e.hf||0)==v?" selected":"")+">"+t+"</option>").join("")+"</select></div></div>"+
  '<div class="row4'+(scSel?"":" c3")+'"><div><label>من آية</label>'+(on?'<select data-c="fa" '+a+' aria-label="من آية">'+ayOpts(e,"fa")+"</select>":'<select disabled aria-label="من آية"><option>—</option></select>')+"</div><div><label>إلى آية</label>"+(on?'<select data-c="ta" '+a+' aria-label="إلى آية">'+ayOpts(e,"ta")+"</select>":'<select disabled aria-label="إلى آية"><option>—</option></select>')+"</div><div><label>الصفحات</label>"+pgSel(id,j,e)+"</div>"+(scSel?"<div><label>التقييم/10</label>"+scSel+"</div>":"")+"</div>"+(e.sur>=0&&!e.pg&&!(+e.fa>0||+e.ta>0)?'<div class="mu" style="color:var(--aud);margin-top:2px">⚠️ لم تُحدَّد الآيات ولا الصفحات؛ لن يُحتسب هذا الإدخال في المجاميع حتى تُدخل الآيات أو عدد الصفحات.</div>':"")}
 function cardBody(s,m){const id=s.id,d=dget(id),a='data-id="'+id+'"';
  if(m.t){return'<div class="seg" role="group" aria-label="الحضور"><button type="button" class="'+(d.att!=3?"on":"")+'" data-a="att" '+a+' data-v="0">حاضر</button><button type="button" class="'+(d.att==3?"on ab":"")+'" data-a="att" '+a+' data-v="3">غائب</button></div>'}
@@ -587,6 +592,16 @@ A.att=el=>{const id=el.dataset.id,v=+el.dataset.v;const d=ED(id);d.att=v;d.ok=1;
 A.allp=()=>{const k=S.dt,L=act().filter(s=>!isRec(s.id)),before=L.map(s=>[s.id,snapRec(s.id,k)]);L.forEach(s=>{const d=ED(s.id,k);d.att=0;d.ok=1});sv();render();toast("تم تسجيل "+L.length+" طلاب حاضرين",()=>{before.forEach(([id,sn])=>{const dd=S.days[k]||(S.days[k]={});if(sn)dd[id]=sn;else delete dd[id]});sv();render()})};
 C.hfs=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.hf=+el.value||0;sv();render()};
 C.sur=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.sur=+el.value;delete e.fa;delete e.ta;e.na=0;if(e.sur>=0&&!e.hf)e.hf=1;sv();render()};
+const nrm=t=>String(t||"").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[إأآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).toLowerCase().trim();
+A.surPick=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const sel=[];if(e.sur>=0)sel.push(e.sur);
+ const draw=q=>{const n=nrm(q);const L=SUR.map((x,i)=>[x,i]).filter(([x,i])=>!n||nrm(x).includes(n)||String(i+1)===n);return L.length?L.map(([x,i])=>'<button type="button" class="surit'+(sel.includes(i)?" on":"")+'" data-si="'+i+'"><span>'+(sel.includes(i)?"☑ ":"☐ ")+(i+1)+". "+esc(x)+'</span><small>'+AYC[i]+" آية · "+surPg(i)+" ص</small></button>").join(""):'<div class="mu" style="padding:12px">لا نتائج</div>'};
+ const info=()=>sel.length?"المحدد: "+sel.length+" · الصفحات: "+qn(sel.reduce((a,i)=>a+surPg(i),0)):"اختر سورة أو أكثر";
+ modal({title:"اختر السورة (يمكن اختيار أكثر من سورة)",html:'<input id="surq" type="search" autocomplete="off" placeholder="🔍 ابحث عن السورة (الاسم أو الرقم)" aria-label="بحث عن سورة"><div id="suri" class="mu" style="margin-top:6px">'+info()+'</div><div id="surl" class="surl">'+draw("")+"</div>",buttons:[{t:"تم",v:true},{t:"إلغاء",v:false,c:"s"}],
+ onOpen:m=>{const q=$("#surq",m),l=$("#surl",m);q.oninput=()=>{l.innerHTML=draw(q.value)};q.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();const f=$(".surit",l);if(f)f.click()}};l.onclick=ev=>{const b=ev.target.closest("[data-si]");if(!b)return;const i=+b.dataset.si,k=sel.indexOf(i);if(k>=0)sel.splice(k,1);else sel.push(i);const st=l.scrollTop;l.innerHTML=draw(q.value);l.scrollTop=st;$("#suri",m).textContent=info()}}}).then(r=>{if(r!==true||!sel.length)return;
+  const d=ED(id),all=[d].concat(d.x||[]);
+  if(e.sur!==sel[0]){C.sur({dataset:{id:id,j:j},value:sel[0]})}
+  sel.slice(1).forEach(i=>{if(!ents(d).some(x=>x.sur===i)){(d.x=d.x||[]).push({sur:i,pg:0,hf:e.hf||1})}});
+  sv();render()})};
 C.pg=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const v=el.value;e.pg=(v===""||!(+v>0))?0:Math.min(100,Math.round(+v*100)/100);if(e.pg)e.na=0;sv();render()};
 function setAy(el,k){const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e||e.sur<0)return;const Tt=AYC[e.sur];let v=el.value===""?0:Math.max(1,Math.min(Tt,Math.round(+el.value)||0));if(v)e[k]=v;else delete e[k];if(e.fa&&e.ta&&e.ta<e.fa){if(k=="fa")e.ta=e.fa;else e.fa=e.ta}e.pg=0;e.na=0;sv();render()}
 C.fa=el=>setAy(el,"fa");C.ta=el=>setAy(el,"ta");
