@@ -378,7 +378,7 @@ function surProg(id,hf,sur,incl,ex){const Tx=wsum(sur,1,AYC[sur]),Tt=surPg(sur);
  Object.keys(S.days||{}).filter(k=>incl?k<=S.dt:k<S.dt).sort().forEach(k=>{const d=rd(k,id);if(!d||d.att!=0)return;let add=0,has=false;ents(d).forEach((e,ix)=>{if(e.sur==sur&&e.hf==hf){const src=ix?d.x[ix-1]:d;if(src===ex&&!src.pg&&src.na)return;add+=e.pg?e.pg:ewt(e);has=true}});if(!has)return;if(fin){run=0;fin=false}run+=add;if(doneP(run,Tx))fin=true});
  return{run:fin?Tt:Math.min(qn(run),Tt),T:Tt,fin}}
 const dirOf=hf=>((S.dir||{})[hf==1?"h":"r"])||"d";
-function nextSur(sur,hf){const d=dirOf(hf);if(d=="n")return null;const t=d=="d"?sur-1:sur+1;return(t>=0&&t<=113)?t:null}
+function nextSur(sur,hf){const d=dirOf(hf);if(d=="n")return null;if(d=="d")return sur==0?113:(sur==1?null:sur-1);const t=sur+1;return(t>=0&&t<=113)?t:null}
 function lastPos(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e.hf==hf&&e.sur>=0).pop();if(l){const Pp=surProg(id,hf,l.sur,false);return{sur:l.sur,run:Pp.run,T:Pp.T,fin:Pp.fin,date:k}}}const sp=((S.sp||{})[id]||{})[hf];if(sp&&sp.sur>=0){const Pp=surProg(id,hf,sp.sur,false);return{sur:sp.sur,run:Pp.run,T:Pp.T,fin:Pp.fin,date:null}}return null}
 function revSince(id,sur,date){let t=0;Object.keys(S.days||{}).filter(k=>k>=date&&k<=S.dt).forEach(k=>{const d=rd(k,id);if(!d||d.att!=0)return;ents(d).forEach((e,ix)=>{if(e.sur!=sur||e.hf!=2)return;const src=ix?d.x[ix-1]:d;if(src.na&&!src.pg)return;t+=e.pg?e.pg:ewt(e)})});return t}
 function pendRev(id){const L=lastPos(id,1);if(!L||!L.fin||!L.date)return null;const Tx=wsum(L.sur,1,AYC[L.sur]),run=revSince(id,L.sur,L.date);return(doneP(run,Tx)||(run>0&&Tx-run<0.5))?null:{sur:L.sur,run:qn(run),T:L.T}}
@@ -1088,7 +1088,7 @@ function vSettings(){const d=lastBackupDays(),inSw=location.protocol.startsWith(
  h+=cardOpen("tp","🧩 قوالب نصوص الواتساب (اليومي والأسبوعي)",tplCard());
  h+=cardOpen("t","✍️ نصوص التقارير",textsCard().replace(/^<div class="card"><b>[^<]*<\/b>/,"").replace(/<\/div>$/,""));
  const dr=(k,l,o)=>'<label>'+l+'</label><select data-c="dir" data-k="'+k+'">'+o.map(([v,t])=>'<option value="'+v+'"'+(((S.dir||{})[k]||"d")==v?" selected":"")+">"+t+"</option>").join("")+"</select>";
- h+=cardOpen("a","⚙️ إعدادات الحساب المتقدمة",dr("h","اتجاه اقتراح الحفظ",[["d","تنازلي (من الناس نحو البقرة)"],["a","تصاعدي"],["n","بدون اقتراح"]])+dr("r","اتجاه اقتراح المراجعة",[["a","تصاعدي"],["d","تنازلي"],["n","بدون اقتراح"]]));
+ h+=cardOpen("a","⚙️ إعدادات الحساب المتقدمة",dr("h","اتجاه اقتراح الحفظ",[["d","تنازلي (الفاتحة ثم من الناس إلى البقرة)"],["a","تصاعدي"],["n","بدون اقتراح"]])+dr("r","اتجاه اقتراح المراجعة",[["a","تصاعدي"],["d","تنازلي"],["n","بدون اقتراح"]]));
  h+=cardOpen("p","📱 التثبيت والعمل بدون إنترنت (PWA)",'<div class="mu" style="line-height:1.9">التطبيق يعمل مباشرة من الملف. لتثبيته كتطبيق والعمل بلا إنترنت يلزم ملف <b>sw.js</b> بجانب الصفحة، وهذا <b>يتطلب استضافة https</b> (مثل GitHub Pages أو Netlify مجاناً) أو localhost؛ لا يعمل service worker من file://. الخطوات: ارفع الملف باسم index.html مع sw.js في نفس المجلد.'+(inSw?"":"<br>الوضع الحالي: ملف محلي، لذلك لا يُسجَّل service worker.")+'</div><button type="button" class="btn s" style="margin-top:8px" data-a="swDl">⬇️ تنزيل sw.js</button>');
  h+='<div class="mu" style="text-align:center;margin:10px 0">إدارة الحلقة · الإصدار 3</div>';return h}
 C.hl=el=>{S.hl=el.value;sv();renderHeader()};C.center=el=>{S.center=el.value;sv();renderHeader()};
