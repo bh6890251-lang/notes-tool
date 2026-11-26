@@ -823,8 +823,8 @@ const TKEYS=["d","ds","wh","ws","wd","wf"];
 const DEF_TPL=()=>({
  d:[T("dTitle"),T("sepA"),"{الطلاب}",T("sepA"),T("dNoHear"),"{قائمة_لم_يسمع}",T("sepA"),T("dAbsent"),"{قائمة_الغياب}",T("sepA"),T("outro")].join("\n"),
  ds:["{الرقم}. *{الطالب}*",T("dHear")+"{التسميع}",T("dExam")+"{الاختبار_القادم}"].join("\n"),
- wh:[T("wTitle"),T("sepB"),""].join("\n"),
- ws:["> *الطالب  ||  {الطالب}*","","{الأيام}","",T("wSum")+"{مجموع_التسميع}",T("goalLine")+"{تهنئة_الهدف}",T("sepA"),""].join("\n"),
+ wh:["📌 *سجل المتابعة الأسبوعي لتسميع الطلبة* ","","> و ذلك من 🗓️",""," سبت [{من}] ← خميس [{إلى}]",""].join("\n"),
+ ws:[T("sepA"),"","> *الطالب  ||  {الطالب}* ","","{الأيام}","",T("wSum")+"{مجموع_التسميع}","",T("sepA")].join("\n"),
  wd:["• {اليوم} 》 {نص_اليوم}",T("sepB")].join("\n"),
  wf:""});
 const TP=k=>(S.tpl&&S.tpl[k]!=null)?S.tpl[k]:DEF_TPL()[k];
@@ -855,7 +855,7 @@ function wText(){const[a,b]=wrange(),fm=k=>{const d=dOf(k);return d.getDate()+"/
   const tkC=todayK(),dl=days.filter(k=>k<=tkC).map(k=>{let t="";if(offd(k))t=T("offDay");else{const d=rd(k,id);t=(d&&!(d.att==0&&!(d.pg||d.sur>=0||(d.t||[]).length||d.nt)))?line(id,k):"لم يُسجَّل"}
    return tfill(TP("wd"),Object.assign({},common,{"اليوم":WDN[dOf(k).getDay()],"تاريخ_اليوم":fm(k),"نص_اليوم":t}))}).join("\n");
   const w=wkp(id),G=goalOf(id),g=G.pg,ac=ach(id),sc=wsc(id);
-  return tfill(TP("ws"),Object.assign({},common,{"الرقم":i+1,"الطالب":s.name,"الأيام":dl,"مجموع_التسميع":w>0?pgf(w):"لا يوجد","الهدف":g>0?pgf(g):"","المنجز":pgf(ac),"النسبة":g>0?Math.round(ac/g*100):"","نوع_الخطة":GTN[G.type],"تهنئة_الهدف":(g>0&&ac>=g)?T("goalOk"):"","التقييم":sc==null?"":sc+"/10","الملاحظة":WK(id).ach||"","الاختبار_القادم":s.ex||""}))}).join("\n");
+  return tfill(TP("ws"),Object.assign({},common,{"الرقم":i+1,"الطالب":s.name,"الأيام":dl,"مجموع_التسميع":w>0?pgf(w):"لا يوجد","الهدف":g>0?pgf(g):"","المنجز":pgf(ac),"النسبة":g>0?Math.round(ac/g*100):"","نوع_الخطة":GTN[G.type],"تهنئة_الهدف":(g>0&&ac>=g)?T("goalOk"):"","التقييم":sc==null?"":sc+"/10","الملاحظة":WK(id).ach||"","الاختبار_القادم":s.ex||""}))}).join("\n").split(T("sepA")+"\n"+T("sepA")).join(T("sepA"));
  return [tfill(TP("wh"),common),blocks,tfill(TP("wf"),common)].join("\n").replace(/\n+$/,"")}
 function wRankText(){const B=T("sepA"),[a,b]=wrange();const cw=wkKeys(0),lw=wkKeys(-1),ttl=(a===cw[0]&&b===cw[5])?"|| تقييم الطلاب لهذا الأسبوع ||":(a===lw[0]&&b===lw[5])?"|| تقييم الطلاب للأسبوع الماضي ||":"|| تقييم الطلاب للفترة ||";const L=[ttl,"من "+fdm(a)+" إلى "+fdm(b),B];
  ranked().forEach((r,k)=>{const id=r.id,tr=wtr(id);L.push(((k+1)+".")+" "+r.n,"الحفظ : "+pgf(+wv(id,"hp"),"لا يوجد"),"المراجعة : "+(wRvList(id).join(" + ")||"لا يوجد"),"الغياب : "+absT(+wv(id,"ab")),"التقييم : "+(r.sc==null?"—":r.sc+" من 10"+(tr?" ("+tr.t+" عن الأسبوع السابق)":"")),"ملاحظة : "+(WK(id).ach||""));if((stu(id)||{}).ex)L.push("اختبار قادم : "+stu(id).ex);L.push(B)});
