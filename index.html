@@ -913,7 +913,7 @@ A.img=async el=>{const k=el.dataset.k;el.disabled=true;try{const c=await reportC
 function dateRow(){return'<div class="card"><div class="dayhead"><button type="button" class="btn s ic" data-a="dnav" data-v="1" aria-label="اليوم التالي">›</button><input type="date" data-c="dt" value="'+S.dt+'" aria-label="التاريخ"><button type="button" class="btn s ic" data-a="dnav" data-v="-1" aria-label="اليوم السابق">‹</button></div><div class="mu">'+fdm(S.dt)+(dmk().t?" · "+DT[dmk().t]:"")+"</div></div>"}
 /* ---- daily report: 4 colored cards ---- */
 const DK=[["d1","📖","المتابعة اليومية للحلقة","طلبة التسميع الجديد","#1f6b4a","#2e9467"],["d2","📚","خطة مراجعة الأجزاء","مراجعة الأجزاء المسجّلة","#b9770e","#e0a22b"],["d3","⏳","لم يسمع","طلبة لم يسمّعوا اليوم","#c2571a","#e8833a"],["d4","🚫","الغياب","طلبة غابوا اليوم","#b3261e","#d9534f"]];
-function dkHead(t){const WD=WDN[dOf(S.dt).getDay()];return["🌿 *"+t+" | اليوم "+WD+" "+fdm(S.dt)+"* 🌿",T("sepA")]}
+function dkHead(t){const WD=WDN[dOf(S.dt).getDay()];return["🌿 *"+t+" | "+fdm(S.dt)+"* 🌿",T("sepA")]}
 function dkRows(a,f){return a.length?a.map(f):[T("dNone")]}
 function dkText(k){const R=roster([S.dt]),L=dkHead(({d1:"المتابعة اليومية للحلقة (طلبة التسميع الجديد)",d2:"خطة مراجعة الأجزاء",d3:"لم يسمع",d4:"الغياب"})[k]);
  const isNew=e=>e&&!e.jz&&e.sur>=0&&e.hf!=2&&!e.na;
