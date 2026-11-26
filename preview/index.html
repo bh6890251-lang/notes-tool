@@ -327,7 +327,8 @@ const DEF_TEXTS={
  wTitle:"🗓️ الأسبوع : سبت [{من}] ← خميس [{إلى}]",wSum:"✅  مجموع التسميع الأسبوعيّ  : ",
  goalLine:"🎯 الهدف الأسبوعي ({نوع_الخطة}): {الهدف} | المنجز: {المنجز} ({النسبة}%)",goalOk:" ✅ ما شاء الله",
  star:"⭐ *نجم الأسبوع:* {الاسم} 🌟",absLine:"( غائب )",noHearLine:"( لم يسمع )",offDay:"إجازة",
- pHead:"السلام عليكم ورحمة الله،"
+ pHead:"السلام عليكم ورحمة الله،",
+ pClose:"نشكر لكم حرصكم ومتابعتكم لابنكم، ونسأل الله أن يبارك فيه ويوفقه لحفظ كتابه. نرجو تشجيعه ومراجعة ما سمّعه في البيت. وفقكم الله."
 };
 const CCD={types:[{n:"خطأ",v:2},{n:"دقرة",v:1},{n:"تنبيهة",v:0.5},{n:"حكم",v:0.5},{n:"سكتة",v:0.25}],pass:80,v:2};
 function emptyState(){return{v:3,hl:"حلقة مسجد سيدنا إبراهيم",center:"مركز تحفيظ سيدنا إبراهيم",dt:todayK(),wf:null,wt:null,mo:null,
@@ -978,7 +979,7 @@ async function hbCanvas(){await loadFonts();const H=honor(ui.mg.hb),W=1080,Hh=19
 const SUBS_RP=[["daily","يومي"],["weekly","أسبوعي"],["monthly","شهري"],["exams","الاختبارات"],["parent","ولي الأمر"],["star","نجم الأسبوع"],["excel","Excel"]];
 function vReports(){const c=ui.sub.reports;return chipsH("reports",SUBS_RP,c)+({daily:vDaily,weekly:vWeekly,monthly:vMonthly,exams:vExams,parent:vParent,star:vStar,excel:vExcel}[c]||vDaily)()}
 const outCard=(id,title,txt,kind)=>'<div class="card"><b>'+title+'</b><div class="text-out" id="'+id+'" dir="rtl">'+esc(txt)+'</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="cp" data-k="'+kind+'">📋 نسخ</button><button type="button" class="btn s" data-a="wa" data-k="'+kind+'">💬 واتساب</button>'+(kind=="d"||kind=="w"?'<button type="button" class="btn au" data-a="img" data-k="'+kind+'">🖼️ صورة</button>':"")+"</div></div>";
-const txtOf=k=>k=="d"?dText():k=="w"?wText():k=="r"?wRankText():/^d[1-4]$/.test(k)?dkText(k):"";
+const txtOf=k=>k=="pw"?pwText(pwCur()):k=="d"?dText():k=="w"?wText():k=="r"?wRankText():/^d[1-4]$/.test(k)?dkText(k):"";
 A.cp=el=>copyText(txtOf(el.dataset.k));A.wa=el=>waText(txtOf(el.dataset.k));
 A.img=async el=>{const k=el.dataset.k;el.disabled=true;try{const c=await reportCanvas(k);await shareBlob(await blobOf(c),(k=="d"?"تقرير-يومي-":"تقرير-أسبوعي-")+S.dt+".png","image/png")}catch(e){imgFail(k,e)}el.disabled=false};
 function dateRow(){return'<div class="card"><div class="dayhead"><button type="button" class="btn s ic" data-a="dnav" data-v="1" aria-label="اليوم التالي">›</button><input type="date" data-c="dt" value="'+S.dt+'" aria-label="التاريخ"><button type="button" class="btn s ic" data-a="dnav" data-v="-1" aria-label="اليوم السابق">‹</button></div><div class="mu">'+fdm(S.dt)+(dmk().t?" · "+DT[dmk().t]:"")+"</div></div>"}
@@ -1064,6 +1065,61 @@ A.cok=async()=>{const c=CC_(),q=cs(),L=act(),s=L[q.st];if(!s)return;const t=cTit
  const d=ED(s.id,k);(d.t=d.t||[]).push({t,pc:sc,er,ps:c.pass});sv();q.c={};render();toast("أُضيفت النتيجة: "+s.name+" — "+t+" — "+sc+"% "+(sc>=c.pass?"(ناجح)":"(لم يجتز)"),null,4500)};
 A.hxd=el=>{const id=el.dataset.id,k=el.dataset.k,j=+el.dataset.j,sn=snapRec(id,k);const d=rd(k,id);if(!d||!d.t||!d.t[j])return;d.t.splice(j,1);d.m=Date.now();sv();render();toast("تم حذف الاختبار",()=>restoreRec(id,k,sn))};
 
+/* ---- parent weekly log: one student, WhatsApp text + printable table ---- */
+const PW_DAYS=["السبت","الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس"];
+const phd=(v,n)=>(v!=null&&v!==""&&!(typeof v=="number"&&isNaN(v)))?String(v):"{"+n+"}";
+function pwEnt(e){const rev=!!(e.jz||e.hf==2);let ay="";if(!e.jz&&e.sur>=0){const f=+e.fa||0,t=+e.ta||0,Tt=AYC[e.sur];ay=f&&t?"من آية "+f+" إلى آية "+t:f?"من آية "+f+" إلى آية "+Tt:t?"من آية 1 إلى آية "+t:""}
+return{nm:e.jz?jzName(e.jz):SUR[e.sur],ay,pg:pgOf(e),ty:rev?"مراجعة":(e.hf==1?"حفظ جديد":"")}}
+function pwData(id){const s=stu(id),[a,b]=wrange(),fm=k=>{const d=dOf(k);return d.getDate()+"/"+(d.getMonth()+1)};
+const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}
+const days=ks.map(k=>{const lab=WDN[dOf(k).getDay()]+" "+fm(k);
+if(offd(k))return{lab,st:"إجازة",it:[],nt:""};
+const d=rd(k,id);if(!d||!rec(k,id))return{lab,none:1,it:[],nt:""};
+const nt=(d.nt||"").trim();
+if(d.att==3)return{lab,st:"غائب",it:[],nt};
+if(d.att==1||d.att==2)return{lab,st:d.att==2?"لم يسمّع (معذور)":"لم يسمّع",it:[],nt};
+const it=ents(d).filter(e=>e&&(e.jz||e.sur>=0)).map(pwEnt);(d.t||[]).forEach(x=>it.push({nm:exs(x),ay:"",pg:0,ty:"",ex:1}));
+return{lab,st:"سمّع",it,nt}});
+const G=goalOf(id),g=G.pg,ac=ach(id);
+return{hl:S.hl,center:S.center,teacher:S.teacher,name:s.name,from:dlab(a),to:dlab(b),days,hp:+wv(id,"hp")||0,rp:+wv(id,"rp")||0,g,gty:GTN[G.type],ac,pct:g>0?Math.round(ac/g*100):null,sc:wsc(id),tn:(WK(id).ach||"").trim(),ex:(s.ex||"").trim(),real:1}}
+const pwBlank=()=>({days:PW_DAYS.map(n=>({lab:n,blank:1})),blank:1});
+const pwFake=()=>({fake:1,hl:"حلقة تجريبية",center:"مركز تجريبي",teacher:"معلم تجريبي",name:"طالب تجريبي",from:"السبت 1/1",to:"الخميس 6/1",hp:3.5,rp:2,g:5,gty:"حفظ جديد",ac:3.5,pct:70,sc:8,tn:"ملاحظة تجريبية للمعلم.",ex:"اختبار تجريبي (وهمي)",
+days:[{lab:"السبت 1/1",st:"سمّع",it:[{nm:"البقرة",ay:"من آية 1 إلى آية 10",pg:1,ty:"حفظ جديد"}],nt:""},{lab:"الأحد 2/1",st:"سمّع",it:[{nm:"البقرة",ay:"من آية 11 إلى آية 20",pg:1.5,ty:"حفظ جديد"}],nt:""},{lab:"الإثنين 3/1",st:"لم يسمّع",it:[],nt:"سبب تجريبي"},{lab:"الثلاثاء 4/1",st:"غائب",it:[],nt:""},{lab:"الأربعاء 5/1",st:"سمّع",it:[{nm:"الفاتحة",ay:"من آية 1 إلى آية 7",pg:1,ty:"مراجعة"},{nm:"البقرة",ay:"من آية 21 إلى آية 30",pg:1,ty:"حفظ جديد"}],nt:""},{lab:"الخميس 6/1",st:"لم يسمّع (معذور)",it:[],nt:""}]});
+function pwCur(){const m=ui.pwm||"real";if(m=="blank")return pwBlank();if(m=="ex")return pwFake();const R=weekRoster();if(!R.length)return pwBlank();let id=ui.pws;if(!R.some(x=>x.id==id))id=ui.pws=R[0].id;return pwData(id)}
+/* one day -> {st, det, pg} (strings; {placeholders} where the app has no data) */
+function pwDay(y){if(y.blank)return{st:"{الحالة}",det:"{السورة} ({من_آية} إلى {إلى_آية})، {الصفحات}، {حفظ_جديد_أو_مراجعة}",pg:"{الصفحات}",d:["{السورة} ({من_آية} إلى {إلى_آية})"],ty:"{حفظ_جديد_أو_مراجعة}"};
+if(y.none)return{st:"—",det:"لم يُسجَّل",pg:"—",d:["لم يُسجَّل"],ty:""};
+const d=y.it.map(x=>x.ex?x.nm:x.nm+" ("+(x.ay?x.ay:"{من_آية} إلى {إلى_آية}")+")");
+const det=y.it.map(x=>x.ex?x.nm:x.nm+" ("+(x.ay?x.ay:"{من_آية} إلى {إلى_آية}")+")، "+(x.pg?pgf(x.pg):"{الصفحات}")+"، "+(x.ty||"{حفظ_جديد_أو_مراجعة}")).join(" + ");
+const real=y.it.filter(x=>!x.ex),sum=real.reduce((a,x)=>a+(x.pg||0),0);
+return{st:y.st,det,pg:real.length?(sum>0?pgf(sum)+(real.some(x=>!x.pg)?" + {الصفحات}":""):"{الصفحات}"):"—",d,ty:[...new Set(real.map(x=>x.ty||"{حفظ_جديد_أو_مراجعة}"))].join(" + ")}}
+function pwGoal(D){return D.g>0?{g:pgf(D.g)+" ("+D.gty+")",a:pgf(D.ac),p:D.pct+"%"}:{g:"{الهدف_الأسبوعي}",a:"{المنجز}",p:"{النسبة}%"}}
+function pwText(D){const B=T("sepB"),L=[];
+if(D.fake)L.push("⚠️ *مثال ببيانات وهمية للتوضيح فقط*");
+L.push("🌿 *سجل التسميع الأسبوعي* 🌿",B,"🕌 المركز: "+phd(D.center,"اسم_المركز"),"📖 الحلقة: "+phd(D.hl,"اسم_الحلقة"),"👤 المعلم: "+phd(D.teacher,"اسم_المعلم"),"🗓️ الأسبوع: من "+phd(D.from,"من_تاريخ")+" إلى "+phd(D.to,"إلى_تاريخ"),"أيام الدوام: من السبت إلى الخميس، والجمعة إجازة","🧒 الطالب: *"+phd(D.name,"اسم_الطالب")+"*",B);
+D.days.forEach(y=>{const o=pwDay(y);L.push("• *"+y.lab+"* : "+(y.st=="سمّع"?"✅ ":"")+o.st+(o.det&&!y.none&&y.st!="غائب"&&!/^لم يسمّع|^إجازة/.test(y.st||"")?" — "+o.det:y.none?" — "+o.det:"")+(y.nt?" | ملاحظة: "+y.nt:""))});
+const bl=D.blank,tot=(D.hp||0)+(D.rp||0);
+L.push(B,"📊 *مجموع التسميع الأسبوعي*","• الحفظ الجديد : "+(bl?"{صفحات_الحفظ}":pgf(D.hp)),"• المراجعة : "+(bl?"{صفحات_المراجعة}":pgf(D.rp)),"• الإجمالي : *"+(bl?"{الإجمالي}":pgf(tot))+"*",B);
+const G=bl?{g:"{الهدف_الأسبوعي}",a:"{المنجز}",p:"{النسبة}%"}:pwGoal(D);
+L.push("🎯 *الهدف الأسبوعي* : "+G.g,"✔️ المنجز : "+G.a+" | النسبة : "+G.p,"⭐ *تقييم الأسبوع* : "+(D.sc!=null?D.sc+" من 10":"{التقييم} من 10"),"📝 *ملاحظة المعلم* : "+phd(D.tn,"ملاحظة_المعلم"));
+if(bl||D.ex)L.push("📌 *اختبار قادم* : "+phd(D.ex,"الاختبار_القادم"));
+L.push(B,T("pClose"));return L.join("\n")}
+function pwHtml(D){const e=esc,bl=D.blank,rows=D.days.map(y=>{const o=pwDay(y);let st=y.st||o.st;const what=y.none?"لم يُسجَّل":(y.blank?o.det:(y.it.length?y.it.map(x=>x.ex?x.nm:x.nm+" ("+(x.ay?x.ay:"{من_آية} إلى {إلى_آية}")+") — "+(x.ty||"{حفظ_جديد_أو_مراجعة}")).join("<br>"):""));
+const wh=y.it&&y.it.length?y.it.map(x=>e(x.ex?x.nm:x.nm+" ("+(x.ay?x.ay:"{من_آية} إلى {إلى_آية}")+") — "+(x.ty||"{حفظ_جديد_أو_مراجعة}")+(x.pg?" — "+pgf(x.pg):""))).join("<br>"):"";
+return"<tr><td>"+e(y.lab)+"</td><td>"+e(st)+"</td><td>"+(y.blank?e(o.d[0])+"<br>"+e(o.ty):y.none?"لم يُسجَّل":wh)+(y.nt?"<div style=\"font-size:12px;color:#444\">ملاحظة: "+e(y.nt)+"</div>":"")+"</td><td>"+e(o.pg)+"</td></tr>"}).join("");
+const tot=(D.hp||0)+(D.rp||0),G=bl?{g:"{الهدف_الأسبوعي}",a:"{المنجز}",p:"{النسبة}%"}:pwGoal(D);
+const sr=(k,v)=>"<tr><th style=\"width:34%\">"+k+"</th><td>"+e(v)+"</td></tr>";
+return'<div class="pg">'+(D.fake?'<div class="ft" style="text-align:center;font-weight:700;background:#fff3cd">⚠️ مثال ببيانات وهمية للتوضيح فقط</div>':"")+'<h2>سجل التسميع الأسبوعي</h2><div class="sub">'+e(phd(D.center,"اسم_المركز"))+" · "+e(phd(D.hl,"اسم_الحلقة"))+'</div><div class="nmr">الطالب: '+e(phd(D.name,"اسم_الطالب"))+'</div><div style="font-size:14px;line-height:2">المعلم: '+e(phd(D.teacher,"اسم_المعلم"))+"<br>الأسبوع: من "+e(phd(D.from,"من_تاريخ"))+" إلى "+e(phd(D.to,"إلى_تاريخ"))+"<br>أيام الدوام: من السبت إلى الخميس، والجمعة إجازة</div>"+
+'<table><thead><tr><th style="width:18%">اليوم</th><th style="width:18%">الحالة</th><th>ما سمّعه</th><th style="width:16%">الصفحات</th></tr></thead><tbody>'+rows+"</tbody></table>"+
+'<table style="margin-top:12px"><tbody>'+sr("الحفظ الجديد",bl?"{صفحات_الحفظ}":pgf(D.hp))+sr("المراجعة",bl?"{صفحات_المراجعة}":pgf(D.rp))+sr("مجموع التسميع الأسبوعي",bl?"{الإجمالي}":pgf(tot))+sr("الهدف الأسبوعي",G.g)+sr("المنجز ونسبته",G.a+" ("+G.p+")")+sr("تقييم الأسبوع",D.sc!=null?D.sc+" من 10":"{التقييم} من 10")+sr("ملاحظة المعلم",phd(D.tn,"ملاحظة_المعلم"))+((bl||D.ex)?sr("اختبار قادم",phd(D.ex,"الاختبار_القادم")):"")+"</tbody></table>"+'<div class="ft">'+e(T("pClose"))+"</div></div>"}
+function pwCard(){const R=weekRoster(),m=ui.pwm||"real";if(!R.some(x=>x.id==ui.pws))ui.pws=R[0]&&R[0].id;
+const mb=(v,l)=>'<button type="button" class="btn'+(m==v?"":" s")+'" data-a="pwm" data-v="'+v+'">'+l+"</button>";
+return weekNav()+'<div class="card"><b>📝 سجل التسميع الأسبوعي (لولي الأمر)</b><div class="mu">سجل لطالب واحد من بياناته المسجّلة. أي بيان غير مسجّل يظهر بين أقواس {} لتعبئته يدوياً، ولا يُخترع شيء.</div><label>الطالب</label><select data-c="pws">'+R.map(s=>'<option value="'+s.id+'"'+(s.id==ui.pws?" selected":"")+">"+esc(s.name)+"</option>").join("")+'</select><div class="flex" style="margin-top:8px">'+mb("real","بيانات الطالب")+mb("blank","قالب فارغ")+mb("ex","مثال وهمي")+"</div></div>"+
+outCard("pwout","📤 نص الواتساب (ولي الأمر)",pwText(pwCur()),"pw")+'<div class="card"><button type="button" class="btn w" data-a="pwPrint">🖨️ عرض الجدول وطباعته</button><div class="mu">جدول بأعمدة: اليوم، الحالة، ما سمّعه، الصفحات. اختر «طباعة» ثم «حفظ كملف PDF» للإرسال.</div></div>'}
+C.pws=el=>{ui.pws=el.value;render()};
+A.pwm=el=>{ui.pwm=el.dataset.v;render()};
+A.pwPrint=()=>{const p=$("#prt");p.innerHTML='<div class="pb"><button type="button" class="btn" data-a="prtGo">🖨️ طباعة / حفظ PDF</button><button type="button" class="btn s" data-a="prtX">إغلاق</button></div>'+pwHtml(pwCur());p.classList.remove("hid");p.scrollTop=0};
+
 /* ---- parent monthly report ---- */
 function repHtml(id,mk,msg){const s=stu(id),n=s.name,g=s.grp,keys=moKeys(mk),st_=mst(id,mk),p1=posTxt(id,1),p2=posTxt(id,2),ex=[];
  const rows=keys.filter(k=>rec(k,id)&&!offd(k)).map(k=>{const d=rd(k,id),E=ents(d).filter(e=>e&&(e.sur>=0||e.pg||e.hf)),t=E.map(e=>{const pg=pgOf(e);return(e.hf==2?"مراجعة: ":e.hf==1?"حفظ: ":"")+(e.jz?jzName(e.jz):e.sur>=0?SUR[e.sur]:"")+(pg?" ("+pgf(pg)+")":"")}).join(" + ");(d.t||[]).forEach(x=>ex.push(exs(x)));
@@ -1072,7 +1128,7 @@ function repHtml(id,mk,msg){const s=stu(id),n=s.name,g=s.grp,keys=moKeys(mk),st_
 function showRep(ids,mk,msg){const p=$("#prt");p.innerHTML='<div class="pb"><button type="button" class="btn" data-a="prtGo">🖨️ طباعة / حفظ PDF</button><button type="button" class="btn s" data-a="prtX">إغلاق</button></div>'+ids.map(id=>repHtml(id,mk,msg)).join("");p.classList.remove("hid");p.scrollTop=0}
 A.prtGo=()=>window.print();A.prtX=()=>$("#prt").classList.add("hid");
 function vParent(){const mk=ui.pm||todayK().slice(0,7);const mid=moKeys(mk);
- return'<div class="card"><b>🖨️ تقرير شهري لولي الأمر</b><label>الطالب</label><select id="pps"><option value="__all">كل الطلاب (صفحة لكل طالب)</option>'+roster(mid.length?mid:[]).concat(act().filter(s=>!roster(mid).includes(s))).map(s=>'<option value="'+s.id+'">'+esc(s.name)+"</option>").join("")+'</select><label>الشهر</label><input type="month" id="ppm" value="'+mk+'" data-c="ppm"><label>رسالة للوالد (اختيارية، تظهر أسفل التقرير)</label><textarea id="ppmsg" data-c="ppmsg" data-on="input">'+esc(ui.pmsg||"")+'</textarea><button type="button" class="btn w" style="margin-top:8px" data-a="ppGo">عرض التقرير وطباعته</button><div class="mu">من شاشة المعاينة اضغط «طباعة» ثم اختر «حفظ كملف PDF» لإرساله على الواتساب.</div></div>'}
+ return pwCard()+'<div class="card"><b>🖨️ تقرير شهري لولي الأمر</b><label>الطالب</label><select id="pps"><option value="__all">كل الطلاب (صفحة لكل طالب)</option>'+roster(mid.length?mid:[]).concat(act().filter(s=>!roster(mid).includes(s))).map(s=>'<option value="'+s.id+'">'+esc(s.name)+"</option>").join("")+'</select><label>الشهر</label><input type="month" id="ppm" value="'+mk+'" data-c="ppm"><label>رسالة للوالد (اختيارية، تظهر أسفل التقرير)</label><textarea id="ppmsg" data-c="ppmsg" data-on="input">'+esc(ui.pmsg||"")+'</textarea><button type="button" class="btn w" style="margin-top:8px" data-a="ppGo">عرض التقرير وطباعته</button><div class="mu">من شاشة المعاينة اضغط «طباعة» ثم اختر «حفظ كملف PDF» لإرساله على الواتساب.</div></div>'}
 C.ppm=el=>{ui.pm=el.value;render()};C.ppmsg=el=>{ui.pmsg=el.value};
 A.ppGo=()=>{if(!S.students.length){toast("لا يوجد طلاب");return}const mk=$("#ppm").value||todayK().slice(0,7),v=$("#pps").value;ui.pm=mk;ui.pmsg=$("#ppmsg").value;const keys=moKeys(mk);showRep(v=="__all"?roster(keys).map(s=>s.id):[v],mk,ui.pmsg)};
 
@@ -1165,7 +1221,7 @@ async function compressLogo(file){const url=URL.createObjectURL(file);const img=
   for(const q of [0.85,0.7,0.55,0.4]){const u=c.toDataURL("image/jpeg",q);if(u.length*0.75<30000)return u}}throw new Error("big")}
 A.logoPick=async()=>{const f=await pickFile("image/*");if(!f)return;try{S.logo=await compressLogo(f);sv();renderHeader();render();toast("تم تحديث الشعار (مضغوط تحت 30KB)")}catch(e){toast("تعذّر استخدام هذه الصورة")}};
 A.logoDef=()=>{const o=S.logo;delete S.logo;sv();renderHeader();render();toast("عاد الشعار الافتراضي",()=>{S.logo=o;sv();renderHeader();render()})};
-const TXL=[["dTitle","عنوان التقرير اليومي ({يوم})"],["dHear","بادئة التسميع"],["dExam","بادئة الاختبار القادم"],["dNoHear","عنوان قائمة «لم يسمع»"],["dAbsent","عنوان قائمة الغياب"],["dExcused","كلمة المعذور"],["dNone","عند عدم وجود أحد"],["outro","الخاتمة (تظهر في اليومي)"],["wTitle","عنوان الأسبوعي ({من} {إلى})"],["wSum","سطر مجموع الأسبوع"],["goalLine","سطر الهدف ({نوع_الخطة} {الهدف} {المنجز} {النسبة})"],["goalOk","عبارة تحقيق الهدف"],["star","سطر نجم الأسبوع ({الاسم})"],["offDay","كلمة الإجازة"],["sepA","فاصل رئيسي"],["sepB","فاصل الأيام"],["absLine","نص الغياب"],["noHearLine","نص عدم التسميع"],["pHead","تحية رسالة الإنذار"]];
+const TXL=[["pClose","عبارة ختام سجل التسميع الأسبوعي لولي الأمر"],["dTitle","عنوان التقرير اليومي ({يوم})"],["dHear","بادئة التسميع"],["dExam","بادئة الاختبار القادم"],["dNoHear","عنوان قائمة «لم يسمع»"],["dAbsent","عنوان قائمة الغياب"],["dExcused","كلمة المعذور"],["dNone","عند عدم وجود أحد"],["outro","الخاتمة (تظهر في اليومي)"],["wTitle","عنوان الأسبوعي ({من} {إلى})"],["wSum","سطر مجموع الأسبوع"],["goalLine","سطر الهدف ({نوع_الخطة} {الهدف} {المنجز} {النسبة})"],["goalOk","عبارة تحقيق الهدف"],["star","سطر نجم الأسبوع ({الاسم})"],["offDay","كلمة الإجازة"],["sepA","فاصل رئيسي"],["sepB","فاصل الأيام"],["absLine","نص الغياب"],["noHearLine","نص عدم التسميع"],["pHead","تحية رسالة الإنذار"]];
 function textsCard(){return'<div class="card"><b>✍️ نصوص التقارير</b><div class="mu">عدّل العبارات والإيموجي. المعاينة تتحدث فوراً.</div>'+TXL.map(([k,l])=>'<label>'+esc(l)+'</label><div class="flex" style="flex-wrap:nowrap"><textarea class="sp" rows="1" data-c="txt" data-on="input" data-k="'+k+'" aria-label="'+esc(l)+'">'+esc(T(k))+'</textarea><button type="button" class="btn s ic" data-a="txtRst" data-k="'+k+'" aria-label="استرجاع الافتراضي لـ '+esc(l)+'">↺</button></div>').join("")+'<button type="button" class="btn s w" style="margin-top:8px" data-a="txtRstAll">استرجاع كل النصوص الافتراضية</button><label>معاينة (تقرير اليوم)</label><div class="text-out" id="tprev" dir="rtl">'+esc(S.students.length?dText():"أضف طلاباً لترى المعاينة")+'</div></div>'}
 C.txt=el=>{const k=el.dataset.k;if(el.value===DEF_TEXTS[k])delete S.texts[k];else S.texts[k]=el.value;sv();const p=$("#tprev");if(p&&S.students.length)p.textContent=dText()};
 A.txtRst=el=>{const k=el.dataset.k,o=S.texts[k];delete S.texts[k];sv();render();toast("استُرجع النص الافتراضي",()=>{if(o!=null)S.texts[k]=o;sv();render()})};
@@ -1204,7 +1260,7 @@ document.addEventListener("focusin",e=>{if(e.target&&e.target.id==="gsq"&&gs.q)g
 /* ================= Settings: view ================= */
 const cardOpen=(k,t,body)=>'<div class="card cc'+(ui.exp["s"+k]?" open":"")+'"><button type="button" class="chd" data-a="tgl" data-k="s'+k+'" aria-expanded="'+!!ui.exp["s"+k]+'"><span>'+t+'</span><span class="cv">▾</span></button><div class="cbody">'+body+"</div></div>";
 function vSettings(){const d=lastBackupDays(),inSw=location.protocol.startsWith("http");let nomig="";try{nomig=localStorage.getItem(NOMIG)==="1"&&!!localStorage.getItem(OLDKEY)}catch(e){}
- let h='<div class="card"><b>🏫 هوية الحلقة</b><label>اسم الحلقة</label><input data-c="hl" data-on="input" value="'+esc(S.hl)+'"><label>اسم المركز</label><input data-c="center" data-on="input" value="'+esc(S.center||"")+'"><div class="flex" style="margin-top:8px;align-items:center"><img src="'+logoSrc()+'" alt="الشعار الحالي" width="56" height="56" style="border-radius:12px;background:#fff"><button type="button" class="btn s" data-a="logoPick">تغيير الشعار</button>'+(S.logo?'<button type="button" class="btn s" data-a="logoDef">الشعار الافتراضي</button>':"")+"</div></div>";
+ let h='<div class="card"><b>🏫 هوية الحلقة</b><label>اسم الحلقة</label><input data-c="hl" data-on="input" value="'+esc(S.hl)+'"><label>اسم المركز</label><input data-c="center" data-on="input" value="'+esc(S.center||"")+'"><label>اسم المعلم (يظهر في تقرير ولي الأمر الأسبوعي)</label><input data-c="teacher" data-on="input" value="'+esc(S.teacher||"")+'"><div class="flex" style="margin-top:8px;align-items:center"><img src="'+logoSrc()+'" alt="الشعار الحالي" width="56" height="56" style="border-radius:12px;background:#fff"><button type="button" class="btn s" data-a="logoPick">تغيير الشعار</button>'+(S.logo?'<button type="button" class="btn s" data-a="logoDef">الشعار الافتراضي</button>':"")+"</div></div>";
  h+='<div class="card"><b>💾 النسخ الاحتياطي</b><div class="mu">'+(d===null?"لم تحفظ نسخة بعد.":"آخر نسخة قبل "+d+" يوم.")+' بياناتك على هذا الجهاز فقط.</div><div class="flex" style="margin-top:8px"><button type="button" class="btn au" data-a="bkShare">💾 حفظ / مشاركة نسخة</button><button type="button" class="btn s" data-a="impFile">📥 استيراد ملف (قديم أو جديد)</button><button type="button" class="btn s" data-a="snapOpen">🕘 النسخ التلقائية</button></div></div>';
  h+='<div class="card"><b>👥 الحلقة الكاملة بين الأجهزة / المعلمين</b><div class="mu">صدّر ملف الحلقة وأرسله لمعلم آخر. عند الاستيراد تظهر خلاصة الفروق ثم يُدمج حسب هوية الطالب وآخر تعديل، دون حذف شيء.</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="shareHalaqa">📤 تصدير الحلقة</button><button type="button" class="btn s" data-a="impFile">📥 استيراد ودمج</button></div></div>';
  if(S.mig&&!nomig)h+='<div class="card"><b>↩️ الترحيل من النسخة القديمة</b><div class="mu">'+S.mig.rep.students+" طالب، "+S.mig.rep.records+' سجل. بياناتك القديمة (halaqa2) ما زالت محفوظة كما هي.</div><button type="button" class="btn s rd" style="margin-top:8px" data-a="undoMig">التراجع عن الترحيل</button></div>';
@@ -1217,7 +1273,7 @@ function vSettings(){const d=lastBackupDays(),inSw=location.protocol.startsWith(
  h+=cardOpen("a","⚙️ إعدادات الحساب المتقدمة",dr("h","اتجاه اقتراح الحفظ",[["d","تنازلي (الفاتحة ثم من الناس إلى البقرة)"],["a","تصاعدي"],["n","بدون اقتراح"]])+dr("r","اتجاه اقتراح المراجعة",[["a","تصاعدي"],["d","تنازلي"],["n","بدون اقتراح"]]));
  h+=cardOpen("p","📱 التثبيت والعمل بدون إنترنت (PWA)",'<div class="mu" style="line-height:1.9">التطبيق يعمل مباشرة من الملف. لتثبيته كتطبيق والعمل بلا إنترنت يلزم ملف <b>sw.js</b> بجانب الصفحة، وهذا <b>يتطلب استضافة https</b> (مثل GitHub Pages أو Netlify مجاناً) أو localhost؛ لا يعمل service worker من file://. الخطوات: ارفع الملف باسم index.html مع sw.js في نفس المجلد.'+(inSw?"":"<br>الوضع الحالي: ملف محلي، لذلك لا يُسجَّل service worker.")+'</div><button type="button" class="btn s" style="margin-top:8px" data-a="swDl">⬇️ تنزيل sw.js</button>');
  h+='<div class="mu" style="text-align:center;margin:10px 0">إدارة الحلقة · الإصدار 3</div>';return h}
-C.hl=el=>{S.hl=el.value;sv();renderHeader()};C.center=el=>{S.center=el.value;sv();renderHeader()};
+C.hl=el=>{S.hl=el.value;sv();renderHeader()};C.center=el=>{S.center=el.value;sv();renderHeader()};C.teacher=el=>{S.teacher=el.value;sv()};
 C.theme=el=>{S.theme=el.value;sv();applyTheme()};
 C.dir=el=>{S.dir=S.dir||{h:"d",r:"d"};S.dir[el.dataset.k]=el.value;sv()};
 
