@@ -591,7 +591,7 @@ function restoreRec(id,k,snap){const dd=S.days[k]||(S.days[k]={});if(snap)dd[id]
 A.att=el=>{const id=el.dataset.id,v=+el.dataset.v;const d=ED(id);d.att=v;d.ok=1;sv();render()};
 A.allp=()=>{const k=S.dt,L=act().filter(s=>!isRec(s.id)),before=L.map(s=>[s.id,snapRec(s.id,k)]);L.forEach(s=>{const d=ED(s.id,k);d.att=0;d.ok=1});sv();render();toast("تم تسجيل "+L.length+" طلاب حاضرين",()=>{before.forEach(([id,sn])=>{const dd=S.days[k]||(S.days[k]={});if(sn)dd[id]=sn;else delete dd[id]});sv();render()})};
 C.hfs=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.hf=+el.value||0;sv();render()};
-C.sur=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.sur=+el.value;delete e.fa;delete e.ta;e.na=0;if(e.sur>=0&&!e.hf)e.hf=1;sv();render()};
+C.sur=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.sur=+el.value;delete e.fa;delete e.ta;e.na=0;if(e.sur>=0&&!e.hf)e.hf=1;e.pg=e.sur>=0?surPg(e.sur):0;sv();render()};
 const nrm=t=>String(t||"").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[إأآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).toLowerCase().trim();
 A.surPick=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const sel=[];if(e.sur>=0)sel.push(e.sur);
  const draw=q=>{const n=nrm(q);const L=SUR.map((x,i)=>[x,i]).filter(([x,i])=>!n||nrm(x).includes(n)||String(i+1)===n);return L.length?L.map(([x,i])=>'<button type="button" class="surit'+(sel.includes(i)?" on":"")+'" data-si="'+i+'"><span>'+(sel.includes(i)?"☑ ":"☐ ")+(i+1)+". "+esc(x)+'</span><small>'+AYC[i]+" آية · "+surPg(i)+" ص</small></button>").join(""):'<div class="mu" style="padding:12px">لا نتائج</div>'};
@@ -600,7 +600,7 @@ A.surPick=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)ret
  onOpen:m=>{const q=$("#surq",m),l=$("#surl",m);q.oninput=()=>{l.innerHTML=draw(q.value)};q.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();const f=$(".surit",l);if(f)f.click()}};l.onclick=ev=>{const b=ev.target.closest("[data-si]");if(!b)return;const i=+b.dataset.si,k=sel.indexOf(i);if(k>=0)sel.splice(k,1);else sel.push(i);const st=l.scrollTop;l.innerHTML=draw(q.value);l.scrollTop=st;$("#suri",m).textContent=info()}}}).then(r=>{if(r!==true||!sel.length)return;
   const d=ED(id),all=[d].concat(d.x||[]);
   if(e.sur!==sel[0]){C.sur({dataset:{id:id,j:j},value:sel[0]})}
-  sel.slice(1).forEach(i=>{if(!ents(d).some(x=>x.sur===i)){(d.x=d.x||[]).push({sur:i,pg:0,hf:e.hf||1})}});
+  sel.slice(1).forEach(i=>{if(!ents(d).some(x=>x.sur===i)){(d.x=d.x||[]).push({sur:i,pg:surPg(i),hf:e.hf||1})}});
   sv();render()})};
 C.pg=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const v=el.value;e.pg=(v===""||!(+v>0))?0:Math.min(100,Math.round(+v*100)/100);if(e.pg)e.na=0;sv();render()};
 function setAy(el,k){const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e||e.sur<0)return;const Tt=AYC[e.sur];let v=el.value===""?0:Math.max(1,Math.min(Tt,Math.round(+el.value)||0));if(v)e[k]=v;else delete e[k];if(e.fa&&e.ta&&e.ta<e.fa){if(k=="fa")e.ta=e.fa;else e.fa=e.ta}e.pg=0;e.na=0;sv();render()}
