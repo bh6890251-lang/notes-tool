@@ -1273,10 +1273,10 @@ function lastEnd(id,sur,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).s
 function autoFa(id,e){const f=lastEnd(id,e.sur,1);if(f>1){e.fa=f;delete e.ta;e.pg=0;e.na=0}}
 function lastAmt(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur>=0).pop();if(!l)continue;const p=l.pg?l.pg:epg(l);if(p>0)return p}return 0}
 /* plan = continue from the suggestion, same size as the student's last memorization entry (to the surah end when the rest is about that size) */
-function planFor(id){const g=drOf(id);if(!g)return null;const Tt=AYC[g.sur],st=g.fa||1,amt=lastAmt(id,1),rest=wsum(g.sur,st,Tt);let ta=Tt;if(amt>0&&rest>amt+0.25)ta=endByPages(g.sur,st,amt);
+function planFor(id){const d0=rd(S.dt,id)||blank();if(d0.att!=0||todayHas(id,1))return null;const g=sugAy(id);if(!g)return null;const Tt=AYC[g.sur],st=g.fa||1,amt=lastAmt(id,1),rest=wsum(g.sur,st,Tt);let ta=Tt;if(amt>0&&rest>amt+0.25)ta=endByPages(g.sur,st,amt);
  const whole=st<=1&&ta>=Tt;return{sur:g.sur,fa:st,ta,whole,pg:whole?surPg(g.sur):q4(wsum(g.sur,st,ta))}}
 const planTxt=p=>SUR[p.sur]+(p.whole?"":" من آية "+p.fa+" إلى "+p.ta)+" · "+pgf(p.pg);
-function applyPlan(id){const p=planFor(id);if(!p)return false;const d=ED(id);d.att=0;d.ok=1;d.sur=p.sur;d.hf=1;d.na=0;if(p.whole){delete d.fa;delete d.ta;d.pg=surPg(p.sur)}else{d.fa=p.fa;d.ta=p.ta;d.pg=0}return true}
+function applyPlan(id){const p=planFor(id);if(!p)return false;const d=ED(id);d.att=0;d.ok=1;let e=d;if(d.sur>=0||d.hf||d.jz){e={};(d.x=d.x||[]).push(e)}e.sur=p.sur;e.hf=1;e.na=0;if(p.whole){delete e.fa;delete e.ta;e.pg=surPg(p.sur)}else{e.fa=p.fa;e.ta=p.ta;e.pg=0}return true}
 A.qplan=el=>{const id=el.dataset.id,k=S.dt,sn=snapRec(id,k),p=planFor(id);if(!p)return;applyPlan(id);sv();render();toast("تم تسميع "+sname(id)+": "+planTxt(p),()=>restoreRec(id,k,sn),7000)};
 /* repeat the last review */
 function lastRev(id){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==2&&(e.jz||e.sur>=0)&&!(e.na&&!e.pg));if(l.length)return{k,l:clone(l)}}return null}
