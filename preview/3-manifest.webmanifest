@@ -1,0 +1,32 @@
+{
+ "name": "إدارة الحلقة (تجريبي)",
+ "short_name": "الحلقة (تجريبي)",
+ "lang": "ar",
+ "dir": "rtl",
+ "display": "standalone",
+ "start_url": "./index.html",
+ "scope": "./",
+ "background_color": "#f4f1e8",
+ "theme_color": "#1f6b4a",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "id": "./index.html?preview"
+}
