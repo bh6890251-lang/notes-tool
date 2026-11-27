@@ -63,8 +63,8 @@ html.dk .seg button.on{color:#06210f}
 @media(prefers-color-scheme:dark){html.auto .seg button.on{color:#06210f}}
 .seg button.on.ab{background:var(--rd);color:#fff}
 .seg button.on.ns{background:var(--au);color:#2a2008}
-nav.bot{position:fixed;bottom:0;inset-inline:0;background:var(--cd);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(4,1fr);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
-nav.bot button{min-height:60px;border:0;background:transparent;color:var(--mu);font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+nav.bot{position:fixed;bottom:0;inset-inline:0;background:var(--cd);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(5,1fr);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+nav.bot button{min-height:60px;border:0;background:transparent;color:var(--mu);font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
 nav.bot button svg{width:24px;height:24px}
 nav.bot button.on{color:var(--g)}
 nav.bot button.on::after{content:"";width:28px;height:3px;border-radius:2px;background:var(--g);margin-top:1px}
@@ -551,7 +551,7 @@ const ICONS={today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
  students:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>',
  reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>'};
-const NAV=[["today","اليوم"],["students","الطلاب"],["reports","التقارير"],["settings","الإعدادات"]];
+const NAV=[["today","اليوم"],["students","الطلاب"],["reports","التقارير"],["portal","أولياء الأمور"],["settings","الإعدادات"]];
 
 /* ---- toast with undo ---- */
 function toast(msg,undo,ms){const box=$("#toast");if(!box)return;const t=document.createElement("div");t.className="tst";t.setAttribute("role","status");
@@ -578,7 +578,7 @@ document.addEventListener("click",e=>{const el=e.target.closest("[data-a]");if(!
 
 /* ---- render ---- */
 let scrollKeep=null;
-function render(keep){const y=window.scrollY;const m=$("#main");if(!m)return;m.innerHTML=({today:vToday,students:vStudents,reports:vReports,settings:vSettings}[ui.tab]||vToday)();
+function render(keep){const y=window.scrollY;const m=$("#main");if(!m)return;m.innerHTML=({today:vToday,students:vStudents,reports:vReports,portal:vPortal,settings:vSettings}[ui.tab]||vToday)();
  $$("nav.bot button").forEach(b=>b.classList.toggle("on",b.dataset.t===ui.tab));renderBars();if(keep!==false)window.scrollTo(0,y);afterRender()}
 function dkAnim(){const rm=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;$$("[data-cnt]").forEach(e=>{const n=+e.dataset.cnt;if(rm||!n){e.textContent=n;return}const t0=performance.now();e.textContent=0;const f=t=>{const p=Math.min(1,(t-t0)/800);e.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});setTimeout(()=>$$(".dkbar i[data-w]").forEach(e=>e.style.width=e.dataset.w+"%"),60)}
 function afterRender(){bkBar();if(ui.tab==="reports"&&ui.sub.reports==="daily")dkAnim();if(ui.tab==="reports"&&ui.sub.reports==="exams")cu();if(ui.tab==="students"&&ui.sub.students==="honor")drawHb();}
@@ -976,7 +976,7 @@ async function hbCanvas(){await loadFonts();const H=honor(ui.mg.hb),W=1080,Hh=19
  x.fillStyle="#f6dd8f";x.font="700 36px "+CQ;x.textAlign="center";x.fillText("بارك الله فيهم ونفع بهم",W/2,Hh-86);return c}
 
 /* ================= Reports: view ================= */
-const SUBS_RP=[["daily","يومي"],["weekly","أسبوعي"],["monthly","شهري"],["exams","الاختبارات"],["parent","ولي الأمر"],["star","نجم الأسبوع"],["excel","Excel"]];
+const SUBS_RP=[["daily","يومي"],["weekly","أسبوعي"],["monthly","شهري"],["exams","الاختبارات"],["parent","ولي الأمر"]]; /* "star" and "excel" tabs hidden at the user's request; their code is kept */
 function vReports(){const c=ui.sub.reports;return chipsH("reports",SUBS_RP,c)+({daily:vDaily,weekly:vWeekly,monthly:vMonthly,exams:vExams,parent:vParent,star:vStar,excel:vExcel}[c]||vDaily)()}
 const outCard=(id,title,txt,kind)=>'<div class="card"><b>'+title+'</b><div class="text-out" id="'+id+'" dir="rtl">'+esc(txt)+'</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="cp" data-k="'+kind+'">📋 نسخ</button><button type="button" class="btn s" data-a="wa" data-k="'+kind+'">💬 واتساب</button>'+(kind=="d"||kind=="w"?'<button type="button" class="btn au" data-a="img" data-k="'+kind+'">🖼️ صورة</button>':"")+"</div></div>";
 const txtOf=k=>k=="pw"?pwText(pwCur()):k=="d"?dText():k=="w"?wText():k=="r"?wRankText():/^d[1-4]$/.test(k)?dkText(k):"";
@@ -1119,6 +1119,54 @@ outCard("pwout","📤 نص الواتساب (ولي الأمر)",pwText(pwCur())
 C.pws=el=>{ui.pws=el.value;render()};
 A.pwm=el=>{ui.pwm=el.dataset.v;render()};
 A.pwPrint=()=>{const p=$("#prt");p.innerHTML='<div class="pb"><button type="button" class="btn" data-a="prtGo">🖨️ طباعة / حفظ PDF</button><button type="button" class="btn s" data-a="prtX">إغلاق</button></div>'+pwHtml(pwCur());p.classList.remove("hid");p.scrollTop=0};
+/* ===== parent portal, phase 2: publish the weekly summary to the teacher's own Supabase (optional, needs internet) ===== */
+const PUBKEY="prev_halaqa3_pub"; /* separate key: never part of S, backups or exports */
+function pubCfg(){try{return JSON.parse(localStorage.getItem(PUBKEY)||"{}")||{}}catch(e){return{}}}
+function pubSave(o){try{localStorage.setItem(PUBKEY,JSON.stringify(o));return true}catch(e){toast("تعذّر الحفظ على هذا الجهاز");return false}}
+function pubUrl(v){v=(v||"").trim().replace(/\/+$/,"").replace(/\/rest\/v1$/,"");return(/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(v)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(v))?v:null}
+function pubKeyErr(k){k=(k||"").trim();if(!k)return"";if(/^sb_secret_/.test(k))return"هذا مفتاح سري (secret) ولا يوضع هنا أبداً. استخدم المفتاح العام فقط (anon public)";const p=k.split(".");if(p.length==3){try{const j=JSON.parse(atob(p[1].replace(/-/g,"+").replace(/_/g,"/")));if(j.role&&j.role!=="anon")return"هذا المفتاح دوره ("+j.role+") وليس anon. لا يوضع هنا. استخدم anon public فقط"}catch(e){return"المفتاح غير صالح"}}else if(!/^sb_publishable_/.test(k))return"صيغة المفتاح غير معروفة. استخدم anon public key";return""}
+const pubReady=c=>!!(pubUrl(c.url)&&c.key&&!pubKeyErr(c.key)&&c.pw);
+function pubSetCard(){const c=pubCfg(),ok=pubReady(c);
+ return'<div class="card"><b>☁️ نشر الأسبوع لأولياء الأمور (Supabase)</b><div class="mu">اختياري. التطبيق يعمل كاملاً بدون إنترنت وبدون هذه الإعدادات. تُحفظ هذه القيم على هذا الجهاز فقط، ولا تدخل النسخ الاحتياطية ولا التصدير. لا تضع هنا مفتاح service_role أو أي مفتاح سري.</div>'+
+ '<label>رابط المشروع (Project URL)</label><input dir="ltr" inputmode="url" autocomplete="off" placeholder="https://xxxx.supabase.co" data-c="pubu" value="'+esc(c.url||"")+'">'+
+ '<label>المفتاح العام (anon public key)</label><input dir="ltr" autocomplete="off" placeholder="eyJ... أو sb_publishable_..." data-c="pubk" value="'+esc(c.key||"")+'">'+
+ '<label>كلمة سر النشر (من اختيارك)</label><input type="password" dir="ltr" autocomplete="off" data-c="pubp" value="'+esc(c.pw||"")+'">'+
+ '<div class="mu" style="margin-top:8px">الحالة: '+(ok?"✅ الإعدادات كاملة":"⚠️ ناقصة")+"</div></div>"}
+C.pubu=el=>{const c=pubCfg(),v=el.value.trim();if(v&&!pubUrl(v)){toast("الرابط يجب أن يكون https://xxxx.supabase.co");el.value=c.url||"";return}c.url=v?pubUrl(v):"";if(pubSave(c)){toast("تم الحفظ");render(true)}};
+C.pubk=el=>{const c=pubCfg(),v=el.value.trim(),er=pubKeyErr(v);if(er){toast(er,null,6000);el.value=c.key||"";return}c.key=v;if(pubSave(c)){toast("تم الحفظ");render(true)}};
+C.pubp=el=>{const c=pubCfg();c.pw=el.value;if(pubSave(c)){toast("تم الحفظ");render(true)}};
+ICONS.portal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M17 5.5a3 3 0 0 1 0 5M18.5 14.8c1.7.7 2.8 2.3 3 5.2"/></svg>';
+function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+pubCard()+pubSetCard()}
+function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
+function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
+ const stm={"سمّع":"heard","لم يسمّع":"not_heard","لم يسمّع (معذور)":"excused","غائب":"absent","إجازة":"off"};
+ return{week_start:a,week_end:b,students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
+  const days=[];D.days.forEach((y,i)=>{if(y.none)return;const st=stm[y.st];if(!st)return;if(st=="heard")pr++;else if(st=="absent")ab++;else if(st=="excused")ex++;
+   days.push({day_date:ks[i],status:st,items:y.it.filter(x=>!x.ex).map(x=>({name:x.nm,ay:x.ay||null,pages:x.pg||0,type:x.ty=="مراجعة"?"review":x.ty=="حفظ جديد"?"hifz":null})),note:y.nt||null})});
+  return{app_id:String(s.id),first_name:String(s.name||"").trim().split(/\s+/)[0],group_name:s.grp||null,
+   goal_pages:G.pg>0?G.pg:null,goal_type:G.pg>0?G.type:null,achieved_pages:G.pg>0?D.ac:null,hifz_pages:D.hp,review_pages:D.rp,
+   present_days:pr,absent_days:ab,excused_days:ex,rating:D.sc!=null?D.sc:null,teacher_note:D.tn||null,days}})}}
+function pubCard(){const c=pubCfg(),[a]=wrange(),l=(c.last||{})[a];
+ return'<div class="card"><b>☁️ نشر الأسبوع</b><div class="mu">يرفع ملخصاً أسبوعياً لكل طالب فقط (الأيام، ما سمّعه، الصفحات، الحضور والغياب، الهدف والمنجز، التقييم، ملاحظتك). لا يحذف شيئاً من بياناتك.'+(l?"<br>آخر نشر لهذا الأسبوع: "+esc((d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(l.t)))+" ("+l.n+" طالب). عدّلت شيئاً بعده؟ انشر مرة أخرى فيتحدّث.":"")+'</div><button type="button" class="btn w" style="margin-top:8px" data-a="pubGo"'+(ui.pubBusy?" disabled":"")+">"+(ui.pubBusy?"جاري النشر...":"☁️ نشر الأسبوع")+"</button></div>"}
+function pubErr(r,j){const m=((j&&(j.message||j.error||j.msg))||"")+"";
+ if(/forbidden/.test(m))return"كلمة سر النشر غير صحيحة";
+ if(r.status==401||r.status==403||/api key|JWT|apikey/i.test(m))return"المفتاح العام غير صحيح أو غير مسموح";
+ if(r.status==404||/Could not find the function|schema cache/i.test(m))return"دالة publish_week غير موجودة في قاعدة البيانات. نفّذ ملف SQL أولاً";
+ return"تعذّر النشر ("+r.status+")"}
+A.pubGo=async()=>{if(ui.pubBusy)return;const c=pubCfg();
+ if(!pubReady(c)){toast("أكمل إعدادات النشر من تبويب الإعدادات أولاً",null,4500);return}
+ if(navigator.onLine===false){toast("لا يوجد إنترنت الآن. لم يُنشر شيء، وتطبيقك يعمل كالمعتاد. انشر لاحقاً",null,5000);return}
+ const P=pubPayload();if(!P.students.length){toast("لا يوجد طلاب في هذا الأسبوع");return}
+ if(!confirm("نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء الأولى فقط كما يلي:\n"+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
+ ui.pubBusy=true;render(true);
+ try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);
+  const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
+  const r=await fetch(pubUrl(c.url)+"/rest/v1/rpc/publish_week",{method:"POST",headers:h,body:JSON.stringify({p_secret:c.pw,p_payload:P}),signal:ctl.signal});clearTimeout(tm);
+  const j=await r.json().catch(()=>null);
+  if(r.ok&&j&&j.ok){const c2=pubCfg();c2.last=c2.last||{};c2.last[P.week_start]={t:Date.now(),n:j.published};pubSave(c2);toast("تم نشر "+j.published+" طالب ✅",null,4500)}
+  else toast(pubErr(r,j),null,6000)}
+ catch(e){toast(e&&e.name=="AbortError"?"انتهت المهلة. لم يتأكد النشر، حاول مرة أخرى":"تعذّر الاتصال بالإنترنت أو بالمشروع. لم يُنشر شيء",null,5000)}
+ ui.pubBusy=false;render(true)};
 
 /* ---- parent monthly report ---- */
 function repHtml(id,mk,msg){const s=stu(id),n=s.name,g=s.grp,keys=moKeys(mk),st_=mst(id,mk),p1=posTxt(id,1),p2=posTxt(id,2),ex=[];
