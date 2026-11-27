@@ -167,7 +167,9 @@ let OFFT=0;
 function showOff(){const e=document.getElementById("off");if(!e)return;if(OFFT){e.textContent="📴 لا يوجد اتصال بالإنترنت. تُعرض آخر بيانات محدّثة ("+ago(new Date(OFFT).toISOString())+"). ستتحدّث تلقائياً عند عودة الاتصال.";e.classList.remove("hid")}else e.classList.add("hid")}
 function offOn(t){OFFT=OFFT?Math.min(OFFT,t):t;showOff()}
 function offOff(){if(OFFT){OFFT=0;showOff()}}
-async function rpc(fn,body){
+const RMEMO={};
+function rpc(fn,body){if(!CF[fn]||fn=="parent_login")return rpc0(fn,body);const k=fn+JSON.stringify(body),m=RMEMO[k];if(m&&Date.now()-m.t<60000)return m.p;const p=rpc0(fn,body);RMEMO[k]={t:Date.now(),p};p.catch(()=>{if(RMEMO[k]&&RMEMO[k].p===p)delete RMEMO[k]});return p}
+async function rpc0(fn,body){
  const h={"Content-Type":"application/json",apikey:KEY};
  let r,j=null;const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
  try{r=await fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(body),signal:ctl.signal})}catch(e){clearTimeout(tm);const c=cget(fn,body);if(c){offOn(c.t);return c.v}throw{code:"net"}}
@@ -233,14 +235,15 @@ function relink(){const d=document.createElement("div");d.className="ctr";d.inne
 async function init(){
  if(!TOKEN||TOKEN.length<16){showErr("افتح الرابط الخاص بك كما أرسله لك معلم الحلقة.");relink();return}
  try{const o=localStorage.getItem("hq_tok");if(o&&o!==TOKEN)cpurge()}catch(e){}
- try{const j=await rpc("parent_login",{p_token:TOKEN});
+ try{rpc("parent_weekly",{p_token:TOKEN,p_week_start:curWeek()}).catch(()=>{});rpc("parent_weeks",{p_token:TOKEN}).catch(()=>{});
+  const j=await rpc("parent_login",{p_token:TOKEN});
   try{localStorage.setItem("hq_tok",TOKEN)}catch(e){}
   ST.parent=j.parent;ST.kids=j.children||[];
   $("#sub").textContent="أهلاً "+ST.parent;showApp();
   swReg();
   if(!ST.kids.length){$("#main").innerHTML='<div class="card">لا يوجد أبناء مرتبطون بهذا الرابط بعد. تواصل مع معلم الحلقة.</div>';return}
-  ST.sid=ST.kids[0].student_id;ST.week=curWeek();loadWeeks();loadAl();
-  loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()});
+  ST.sid=ST.kids[0].student_id;ST.week=curWeek();loadWeeks();
+  setTimeout(()=>{loadAl();probeGen();loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()})},1500);
   await load()}
  catch(e){showErr(fail(e),e.code=="net"||e.code=="other"?init:null);if(["bad_token","revoked","expired"].includes(e.code))relink()}}
 async function loadWeeks(){try{const j=await rpc("parent_weeks",{p_token:TOKEN});ST.weeks=(j.weeks||[]).map(String);if(ST.kids.length)draw()}catch(e){}}
@@ -253,7 +256,7 @@ async function load(){
   ST.reps=(j.reports||[]);ST.err="";
   const r=ST.reps.find(x=>x.student_id==ST.sid);
   ST.honor=null;
-  if(r)await loadMine();try{const h=await rpc("parent_honor",{p_token:TOKEN,p_week_start:ST.week});ST.honor=h.honor||null}catch(e){}
+  await Promise.all([r?loadMine():0,rpc("parent_honor",{p_token:TOKEN,p_week_start:ST.week}).then(h=>{ST.honor=h.honor||null}).catch(()=>{})]);
   ST.busy=false;autoOpen();
   if(r)rpc("parent_record_view",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week}).catch(()=>{})}
  catch(e){ST.busy=false;ST.reps=[];ST.err=fail(e)}
@@ -332,6 +335,7 @@ function autoOpen(){
  const t=fd(new Date());let d=ds.find(x=>x.day_date==t&&x.status!="off")||ds.find(x=>x.status=="heard"||(x.items||[]).length)||ds[0];
  if(d)ST.open[d.day_date]=1}
 /* ===== NEXT: monthly report (private), general monthly report, follow-up level + alerts. Reads only through token-checked server functions. ===== */
+const FU_ON=false; /* follow-up level + alerts stay hidden until the teacher approves the thresholds */
 const LV={plan:[100,70],att:[90,75],rev:1}; /* proposed thresholds, shown to the teacher for approval: plan % (excellent/good), attendance % (excellent/good), review pages per memorized page */
 ST.tab="wk";ST.mon=null;ST.mo={};ST.gen={};ST.al=null;ST.dlb=false;
 const MD={},GD={};
@@ -339,7 +343,7 @@ function curMon(){return fd(new Date()).slice(0,7)}
 function mShift(m,n){const[a,b]=m.split("-").map(Number),d=new Date(a,b-1+n,1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
 function mName(m){const[a,b]=m.split("-").map(Number);return MON[b-1]+" "+nm(a)}
 function tabsBar(){const n=(ST.al&&ST.al.items?ST.al.items.filter(x=>ST.kids.some(k=>k.student_id==x.student_id)).length:0);
- const T=[["wk","الأسبوع"],["mo","الشهر"],["gen","الحلقة"],["fu","المتابعة"]];
+ const T=[["wk","الأسبوع"],["mo","الشهر"]].concat(ST.genOk===true?[["gen","الحلقة"]]:[],FU_ON?[["fu","المتابعة"]]:[]);
  return'<div class="chips" role="tablist" style="margin-top:2px">'+T.map(t=>'<button class="chip'+(ST.tab==t[0]?" on":"")+'" role="tab" aria-selected="'+(ST.tab==t[0])+'" data-a="tab" data-t="'+t[0]+'" style="min-height:46px;font-size:16px;padding:6px 8px;position:relative">'+t[1]+(t[0]=="fu"&&n>0?'<i class="tdot"></i>':"")+'</button>').join("")+'</div>'}
 function sum(a,f){return a.reduce((s,x)=>s+(+f(x)||0),0)}
 function moStats(D){const T=D.totals||{};const hp=+T.hifz||0,rp=+T.review||0,pr=+T.present||0,ab=+T.absent||0,ex=+T.excused||0;
@@ -351,15 +355,36 @@ function lvl(p,t){return p==null?["بدون خطة","neu"]:p>=t[0]?["ممتاز"
 function levels(S){const m=lvl(S.pct,LV.plan),at=lvl(S.att,LV.att);
  const rr=S.hp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","neu"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز",""]:rr>=LV.rev/2?["جيد","neu"]:["يحتاج متابعة","bad"];
  return{mem:m,rev:rv,reg:at}}
+async function monthFromWeeks(mon,sid){
+ const ms=mon+"-01",me=fd(new Date(+mon.slice(0,4),+mon.slice(5)-0,0)),lo=shift(ms,-6);
+ if(!(ST.weeks||[]).length){try{const j=await rpc("parent_weeks",{p_token:TOKEN});ST.weeks=(j.weeks||[]).map(String)}catch(e){}}
+ const wl=(ST.weeks||[]).map(String).filter(w=>w>=lo&&w<=me);
+ const T={hifz:0,review:0,present:0,absent:0,excused:0};let g=0,a=0;const rt=[];let info={};
+ const RS=await Promise.all(wl.map(w=>rpc("parent_weekly",{p_token:TOKEN,p_week_start:w}).catch(()=>null)));
+ for(let wi=0;wi<wl.length;wi++){const w=wl[wi],j=RS[wi];if(!j)continue;
+  const r=(j.reports||[]).find(x=>x.student_id==sid);if(!r)continue;info={center_name:r.center_name,halaqa_name:r.halaqa_name,first_name:r.first_name};
+  if(w>=ms&&w<=me){g+=+r.goal_pages||0;a+=+r.achieved_pages||0;if(r.rating!=null)rt.push(+r.rating)}
+  (r.days||[]).forEach(d=>{if(d.day_date<ms||d.day_date>me)return;
+   (d.items||[]).forEach(i=>{const p=+i.pages||0;if(i.type=="review")T.review+=p;else if(i.type=="hifz")T.hifz+=p});
+   if(d.status=="heard")T.present++;else if(d.status=="absent")T.absent++;else if(d.status=="excused"||d.status=="not_heard")T.excused++})}
+ return Object.assign({ok:true,month:mon,totals:T,goal_pages:g,achieved_pages:a,ratings:rt,juz_done:null,local:true},info)}
+async function getMonth(sid,mon){const k=sid+":"+mon;if(MD[k])return MD[k];
+ if(nf("parent_monthly")){MD[k]=await monthFromWeeks(mon,sid);return MD[k]}
+ try{MD[k]=await rpc("parent_monthly",{p_token:TOKEN,p_student_id:sid,p_month:mon})}
+ catch(e){if(e&&e.code=="other"&&e.status==404){nfSet("parent_monthly");MD[k]=await monthFromWeeks(mon,sid)}else throw e}
+ return MD[k]}
 async function loadMo(){const k=ST.sid+":"+ST.mon;if(MD[k]){ST.moBusy=false;return draw()}
  ST.moBusy=true;ST.moErr="";draw();
- try{const j=await rpc("parent_monthly",{p_token:TOKEN,p_student_id:ST.sid,p_month:ST.mon});MD[k]=j}catch(e){ST.moErr=e&&e.code=="other"&&e.status==404?"هذه الميزة ستتوفر قريباً.":fail(e)}
+ try{await getMonth(ST.sid,ST.mon)}catch(e){ST.moErr=fail(e)}
  ST.moBusy=false;draw()}
 async function loadGen(){if(GD[ST.mon]){ST.moBusy=false;return draw()}
  ST.moBusy=true;ST.moErr="";draw();
  try{GD[ST.mon]=await rpc("parent_month_general",{p_token:TOKEN,p_month:ST.mon})}catch(e){ST.moErr=e&&e.code=="other"&&e.status==404?"هذه الميزة ستتوفر قريباً.":fail(e)}
  ST.moBusy=false;draw()}
-async function loadAl(){try{ST.al=await rpc("parent_alerts",{p_token:TOKEN})}catch(e){ST.al=ST.al||{items:[]}}if(ST.tab=="fu")draw();else if(!ST.busy)draw()}
+async function probeGen(){if(nf("parent_month_general")){ST.genOk=false;return}try{await rpc("parent_month_general",{p_token:TOKEN,p_month:curMon()});ST.genOk=true}catch(e){ST.genOk=(e&&e.code=="other"&&e.status==404)?false:ST.genOk;if(e&&e.status==404)nfSet("parent_month_general")}draw()}
+function nf(f){try{return Date.now()-(+localStorage.getItem("hq_nf:"+f)||0)<216e5}catch(e){return false}}
+function nfSet(f){try{localStorage.setItem("hq_nf:"+f,Date.now())}catch(e){}}
+async function loadAl(){if(nf("parent_alerts")){ST.alOk=false;ST.al=ST.al||{items:[]};return}try{ST.al=await rpc("parent_alerts",{p_token:TOKEN});ST.alOk=true}catch(e){ST.alOk=(e&&e.code=="other"&&e.status==404)?false:ST.alOk;if(e&&e.status==404)nfSet("parent_alerts");ST.al=ST.al||{items:[]}}if(ST.tab=="fu")draw();else if(!ST.busy)draw()}
 function monNav(){const cm=curMon();return'<div class="nav"><button class="btn s" data-a="mprev" aria-label="الشهر السابق">السابق ›</button><div class="mid">'+mName(ST.mon)+(ST.mon==cm?'<small>الشهر الحالي</small>':"")+'</div><button class="btn s" data-a="mnext"'+(ST.mon>=cm?" disabled":"")+' aria-label="الشهر التالي">‹ التالي</button></div>'}
 function st4(a){return'<div class="st4">'+a.map(x=>'<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>').join("")+'</div>'}
 function planBlock(S,lab){if(!(S.g>0))return"";const p=Math.min(100,S.pct||0);return'<div class="plan"><b>الخطة: '+nm(S.g)+' صفحة</b> · <b>المنجز: '+nm(S.a)+'</b> ('+nm(S.pct)+'٪)<div class="bar"><i style="width:'+p+'%"></i></div></div>'}
@@ -373,8 +398,7 @@ function drawMo(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
   st4([[nm(S.hp),"📖 حفظ"],[nm(S.rp),"🔁 مراجعة"],[nm(S.pr),"✅ حضور"],[nm(S.ab+S.ex),"❌ غياب"+(S.ex>0?" ("+nm(S.ex)+" بعذر)":"")]]);
  if(S.att!=null)h+='<div style="margin-top:10px">✅ نسبة الحضور: <b>'+nm(S.att)+'٪</b></div>';
  if(S.rate!=null)h+='<div style="margin-top:6px">⭐ التقييم: <b>'+nm(S.rate)+' / ١٠</b></div>';
- h+='<div style="margin-top:6px">🎓 الأجزاء المكتملة: <b>'+(S.jzApprox?"~":"")+nm(S.juz.length)+'</b>'+(S.juz.length&&!S.jzApprox?" <span class='mu'>("+S.juz.map(j=>"جزء "+nm(j)).join("، ")+")</span>":"")+'</div>';
- if(S.jzApprox&&S.juz.length)h+='<div class="mu" style="margin-top:4px">العدد تقريبي (صفحات الحفظ ÷ ٢٠) حتى يضيف المعلم الأجزاء المكتملة.</div>';
+ if(!S.jzApprox)h+='<div style="margin-top:6px">🎓 الأجزاء المكتملة: <b>'+nm(S.juz.length)+'</b>'+(S.juz.length?" <span class='mu'>("+S.juz.map(j=>"جزء "+nm(j)).join("، ")+")</span>":"")+'</div>';
  h+='<div class="flex2"><button class="btn s" data-a="mimg"'+(ST.dlb?" disabled":"")+'>🖼️ تنزيل صورة</button><button class="btn s" data-a="mpdf"'+(ST.dlb?" disabled":"")+'>📄 تنزيل PDF</button></div></div>';
  M.innerHTML=h}
 function drawGen(){const M=$("#main");let h=monNav();
@@ -392,7 +416,7 @@ function drawGen(){const M=$("#main");let h=monNav();
  M.innerHTML=h}
 function drawFu(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||{};let h="";
  const cm=curMon(),D=MD[ST.sid+":"+cm];
- if(!D&&!ST.fuBusy&&!ST.fuTried){ST.fuTried=1;ST.fuBusy=true;rpc("parent_monthly",{p_token:TOKEN,p_student_id:ST.sid,p_month:cm}).then(j=>{MD[ST.sid+":"+cm]=j}).catch(()=>{}).then(()=>{ST.fuBusy=false;ST.fuTried=0;if(ST.tab=="fu")draw()})}
+ if(!D&&!ST.fuBusy&&!ST.fuTried){ST.fuTried=1;ST.fuBusy=true;getMonth(ST.sid,cm).catch(()=>{}).then(()=>{ST.fuBusy=false;ST.fuTried=0;if(ST.tab=="fu")draw()})}
  h+='<div class="sc"><div class="nm">'+esc(kid.first_name||"")+'</div><div class="mu">مستوى الطالب · '+mName(cm)+'</div>';
  if(ST.fuBusy||!D)h+='<div class="mu" style="margin-top:8px">'+(ST.fuBusy?"جاري التحميل...":"لا توجد بيانات كافية لهذا الشهر بعد.")+'</div>';
  else if(!moStats(D).has)h+='<div class="mu" style="margin-top:8px">لا توجد تقارير منشورة لهذا الشهر بعد.</div>';
@@ -401,7 +425,7 @@ function drawFu(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
   h+=row("📖","الحفظ",L.mem,S.pct==null?"لا توجد خطة محددة لهذا الشهر":"أنجز "+nm(S.pct)+"٪ من خطة الشهر ("+nm(S.a)+" من "+nm(S.g)+" صفحة)")+
    row("🔁","المراجعة",L.rev,"راجع "+esc(pgf(S.rp))+" مقابل حفظ "+esc(pgf(S.hp)))+
    row("📅","الانتظام",L.reg,S.att==null?"لا توجد أيام مسجلة":"حضر "+nm(S.pr)+" يوم ("+nm(S.att)+"٪ من أيام التسميع)")}
- h+='</div><div class="sec">💬 رسائل المعلم لك</div>';
+ h+='</div>';if(ST.alOk===false){M.innerHTML=h;return}h+='<div class="sec">💬 رسائل المعلم لك</div>';
  const it=((ST.al&&ST.al.items)||[]).filter(x=>x.student_id==ST.sid);
  if(!it.length)h+='<div class="sc mu" style="text-align:center">لا توجد رسائل متابعة. ما شاء الله.</div>';
  else it.forEach(x=>{h+='<div class="sc"><div class="nm">🔔 '+esc(x.first_name||kid.first_name||"")+'</div><div class="mu">'+esc(ago(x.sent_at))+'</div><div class="note">'+esc(x.text)+'</div></div>'});
@@ -409,7 +433,7 @@ function drawFu(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
 function drawX(){if(ST.tab=="mo")drawMo();else if(ST.tab=="gen")drawGen();else drawFu()}
 /* ---- image + PDF download ---- */
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
-function moCanvas(D,kid){const S=moStats(D),W=1080,H=820,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+function moCanvas(D,kid){const S=moStats(D),W=1080,NL=(S.att!=null?1:0)+(S.rate!=null?1:0)+(S.jzApprox?0:1),H=290+(S.g>0?110:0)+156+NL*54+100,cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
  const F="'Segoe UI',Tahoma,'Noto Naskh Arabic','Noto Sans Arabic',Arial,sans-serif";c.direction="rtl";c.textAlign="right";
  c.fillStyle="#f4f1e8";c.fillRect(0,0,W,H);
  c.fillStyle="#fff";rr(c,40,40,W-80,H-80,36);c.fill();c.strokeStyle="#d8d2bf";c.lineWidth=3;c.stroke();
@@ -425,7 +449,7 @@ function moCanvas(D,kid){const S=moStats(D),W=1080,H=820,cv=document.createEleme
  cells.forEach((t,i)=>{const cx=W-90-cw*i-cw/2;c.textAlign="center";c.fillStyle="#1f6b4a";c.font="800 56px "+F;c.fillText(t[0],cx,y+36);c.fillStyle="#55655c";c.font="500 28px "+F;c.fillText(t[1],cx,y+82);
   if(i<3){c.strokeStyle="#d8d2bf";c.beginPath();c.moveTo(W-90-cw*(i+1),y-4);c.lineTo(W-90-cw*(i+1),y+96);c.stroke()}});
  c.textAlign="right";y+=156;c.fillStyle="#1d2b24";c.font="500 33px "+F;
- const L=[];if(S.att!=null)L.push("نسبة الحضور: "+nm(S.att)+"٪");if(S.rate!=null)L.push("التقييم: "+nm(S.rate)+" / ١٠");L.push("الأجزاء المكتملة: "+(S.jzApprox?"~":"")+nm(S.juz.length));
+ const L=[];if(S.att!=null)L.push("نسبة الحضور: "+nm(S.att)+"٪");if(S.rate!=null)L.push("التقييم: "+nm(S.rate)+" / ١٠");if(!S.jzApprox)L.push("الأجزاء المكتملة: "+nm(S.juz.length));
  L.forEach(t=>{c.fillText(t,R,y);y+=54});
  c.fillStyle="#55655c";c.font="500 24px "+F;c.textAlign="center";c.fillText("تقرير الحلقة - "+mName(ST.mon),W/2,H-62);return cv}
 function pdfFromCanvas(cv){const j=atob(cv.toDataURL("image/jpeg",0.92).split(",")[1]),jb=new Uint8Array(j.length);for(let i=0;i<j.length;i++)jb[i]=j.charCodeAt(i);
