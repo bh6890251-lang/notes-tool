@@ -1157,9 +1157,13 @@ function kids(sel){return S.students.filter(s=>sel[s.id]).map(s=>({app_id:String
 async function parLoad(){const P=ui.par;if(P.busy)return;P.busy=true;P.err="";render(true);
  try{const j=await tRpc("parent_list");P.list=j.parents||[]}catch(e){P.err=tErr(e);P.list=P.list||[]}
  P.busy=false;render(true)}
+const PARAPK="https://github.com/bh6890251-lang/notes-tool/releases/latest/download/halaqa-parent.apk";
+function parFmt(c){return c?c.slice(0,4)+"-"+c.slice(4):""}
+function parMsg(n){return "السلام عليكم ورحمة الله وبركاته.\nهذا رمزكم الخاص لمتابعة تقرير الحلقة.\n\n1) حمّلوا التطبيق:\n"+PARAPK+"\n\n2) افتحوه وأدخلوا الرمز:\n"+parFmt(n.code)+"\n\nأو افتحوا رابطكم الخاص مباشرة:\n"+n.url+"\n\nالرمز والرابط خاصان بكم فقط، فضلاً لا تشاركوهما."}
+async function parClip(t,ok){try{await navigator.clipboard.writeText(t);toast(ok)}catch(e){const i=$("#parurl");if(i){i.focus();i.select()}toast("تعذّر النسخ تلقائياً، استخدم زر واتساب أو انسخ الرابط يدوياً")}}
 function parNewCard(){const n=ui.par.nw;if(!n)return"";
- const msg="السلام عليكم ورحمة الله وبركاته. هذا رابطكم الخاص لمتابعة تقرير الحلقة: "+n.url+"\nالرابط خاص بكم فقط، فضلاً لا تشاركوه.";
- return'<div class="card" style="border-color:var(--g);border-width:2px"><b>🔗 رابط '+esc(n.name)+'</b><div class="mu">هذا رابط دائم. يمكنك نسخه في أي وقت من زر «نسخ الرابط» في القائمة. لا تضغط «رابط جديد» إلا إذا أردت إيقاف الرابط القديم.</div><input dir="ltr" readonly id="parurl" value="'+esc(n.url)+'" style="margin-top:8px"><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="parCopy">📋 نسخ الرابط</button><a class="btn s" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">واتساب</a><button type="button" class="btn s" data-a="parNwX">تم</button></div></div>'}
+ const msg=parMsg(n);
+ return'<div class="card" style="border-color:var(--g);border-width:2px"><b>🔗 رابط '+esc(n.name)+'</b><div class="mu">هذا رمز ورابط دائمان. يمكنك نسخ الدعوة في أي وقت من زر «نسخ الدعوة» في القائمة. أرسل الرسالة لولي الأمر: يحمّل التطبيق ويكتب الرمز مرة واحدة. لا تضغط «رابط جديد» إلا إذا أردت إيقاف الرابط القديم.</div>'+(n.code?'<div style="font-size:26px;font-weight:700;letter-spacing:3px;text-align:center;direction:ltr;margin:8px 0">'+esc(parFmt(n.code))+'</div>':"")+'<input dir="ltr" readonly id="parurl" value="'+esc(n.url)+'" style="margin-top:8px"><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="parCopyMsg">📋 نسخ رسالة الدعوة</button><button type="button" class="btn s" data-a="parCopyCode">📋 نسخ الرمز</button><button type="button" class="btn s" data-a="parCopy">📋 نسخ الرابط</button><a class="btn s" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">واتساب</a><button type="button" class="btn s" data-a="parNwX">تم</button></div></div>'}
 function parCard(){const P=ui.par,c=pubCfg(),ok=pubReady(c);
  if(!ok)return'<div class="card"><b>👨‍👩‍👧 روابط أولياء الأمور</b><div class="mu">أكمل إعدادات النشر أدناه (الرابط والمفتاح العام وكلمة السر) لتفعيل هذه الميزة.</div></div>';
  if(P.list===null&&!P.busy)setTimeout(parLoad,0);
@@ -1173,7 +1177,7 @@ function parCard(){const P=ui.par,c=pubCfg(),ok=pubReady(c);
   const lv=p.last_viewed_at?(d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(p.last_viewed_at)):null;
   h+='<div class="card" style="margin:8px 0;'+(p.revoked?"opacity:.75":"")+'"><div class="flex" style="justify-content:space-between"><b>'+esc(p.display_name)+"</b><span class='mu'>"+(p.revoked?"⛔ الرابط ملغى":"✅ فعّال")+"</span></div><div class='mu'>الأبناء: "+ch+"</div><div class='mu'>"+(lv?"آخر فتح: "+lv+" ("+p.views+" مرة)":"لم يفتح الرابط بعد")+"</div>";
   if(P.edit===p.id){h+='<label>الأبناء المرتبطون</label>'+stuPick(P.sel,"parsel")+'<div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="parSave" data-id="'+p.id+'">حفظ</button><button type="button" class="btn s" data-a="parEditX">إلغاء</button></div>'}
-  else h+='<div class="flex" style="margin-top:8px">'+(p.revoked?"":(p.has_link?'<button type="button" class="btn" data-a="parCp" data-id="'+p.id+'">📋 نسخ الرابط</button>':"<div class='mu' style='width:100%'>⚠️ لتفعيل نسخ الرابط الدائم اضغط «رابط جديد» مرة واحدة (سيتوقف الرابط القديم).</div>"))+'<button type="button" class="btn s" data-a="parNew" data-id="'+p.id+'">🔗 رابط جديد</button><button type="button" class="btn s" data-a="parEdit" data-id="'+p.id+'">👶 الأبناء</button>'+(p.revoked?"":'<button type="button" class="btn rd" data-a="parRev" data-id="'+p.id+'">إلغاء الرابط</button>')+'<button type="button" class="btn gh" data-a="parDel" data-id="'+p.id+'">🗑️ حذف</button></div>';
+  else h+='<div class="flex" style="margin-top:8px">'+(p.revoked?"":(p.has_link?'<button type="button" class="btn" data-a="parCp" data-id="'+p.id+'">📋 نسخ الدعوة (رمز + رابط)</button>':"<div class='mu' style='width:100%'>⚠️ لتفعيل نسخ الرابط الدائم اضغط «رابط جديد» مرة واحدة (سيتوقف الرابط القديم).</div>"))+'<button type="button" class="btn s" data-a="parNew" data-id="'+p.id+'">🔗 رابط جديد</button><button type="button" class="btn s" data-a="parEdit" data-id="'+p.id+'">👶 الأبناء</button>'+(p.revoked?"":'<button type="button" class="btn rd" data-a="parRev" data-id="'+p.id+'">إلغاء الرابط</button>')+'<button type="button" class="btn gh" data-a="parDel" data-id="'+p.id+'">🗑️ حذف</button></div>';
   h+="</div>"});
  return h+"</div>"}
 C.parnn=el=>{ui.par.nn=el.value};
@@ -1182,19 +1186,21 @@ C.parsel=el=>{ui.par.sel[el.dataset.id]=el.checked};
 A.parRef=()=>parLoad();
 A.parCp=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
  try{const j=await tRpc("parent_get_link",{p_parent_id:p.id});if(!j||!j.ok||!j.token){toast("لا يوجد رابط محفوظ. اضغط «رابط جديد» مرة واحدة.",null,5000);return}
-  const url=parLink(j.token);P.nw={name:p.display_name,url:url};render(true);
-  try{await navigator.clipboard.writeText(url);toast("تم نسخ رابط "+p.display_name+" ✅")}catch(e){const i=$("#parurl");if(i){i.focus();i.select()}toast("حدّد الرابط وانسخه يدوياً")}
+  const url=parLink(j.token);P.nw={name:p.display_name,url:url,code:j.code};render(true);
+  parClip(parMsg(P.nw),"تم نسخ دعوة "+p.display_name+" (الرمز + الرابط) ✅");
   setTimeout(()=>{const i=$("#parurl");if(i&&i.scrollIntoView)i.scrollIntoView({block:"center"})},50)}
  catch(e){toast(tErr(e),null,5000)}};
+A.parCopyMsg=()=>{const n=ui.par.nw;if(n)parClip(parMsg(n),"تم نسخ رسالة الدعوة ✅")};
+A.parCopyCode=()=>{const n=ui.par.nw;if(n&&n.code)parClip(parFmt(n.code),"تم نسخ الرمز ✅")};
 A.parNwX=()=>{ui.par.nw=null;render(true)};
 A.parCopy=async()=>{const n=ui.par.nw;if(!n)return;try{await navigator.clipboard.writeText(n.url);toast("تم نسخ الرابط")}catch(e){const i=$("#parurl");if(i){i.focus();i.select()}toast("حدّد الرابط وانسخه يدوياً")}};
 A.parAdd=async()=>{const P=ui.par,ni=$('[data-c="parnn"]');if(ni)P.nn=ni.value;const nm=(P.nn||"").trim();if(!nm){toast("اكتب اسم ولي الأمر");return}if(P.busy)return;P.busy=true;render(true);
  try{const j=await tRpc("parent_create",{p_display_name:nm,p_note:null});const k=kids(P.ns);if(k.length)await tRpc("parent_set_children",{p_parent_id:j.parent_id,p_children:k});
-  P.nw={name:nm,url:parLink(j.token)};P.nn="";P.ns={};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم إنشاء الرابط ✅",null,4000)}
+  P.nw={name:nm,url:parLink(j.token),code:j.code};P.nn="";P.ns={};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم إنشاء الرابط ✅",null,4000)}
  catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true);setTimeout(()=>{const i=$("#parurl");if(i&&i.scrollIntoView)i.scrollIntoView({block:"center"})},50)};
 A.parNew=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
  if(!confirm("⚠️ إنشاء رابط جديد لـ "+p.display_name+"؟\nالرابط القديم سيتوقف فوراً، وتطبيق ولي الأمر المرتبط به لن يعمل حتى يفتح ولي الأمر الرابط الجديد. هل تريد المتابعة؟"))return;P.busy=true;render(true);
- try{const j=await tRpc("parent_renew_token",{p_parent_id:p.id});P.nw={name:p.display_name,url:parLink(j.token)};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[]}
+ try{const j=await tRpc("parent_renew_token",{p_parent_id:p.id});P.nw={name:p.display_name,url:parLink(j.token),code:j.code};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[]}
  catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true)};
 A.parRev=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
  if(!confirm("⚠️ إلغاء رابط "+p.display_name+"؟\nيتوقف فوراً ولن يستطيع ولي الأمر ولا تطبيقه فتح التقارير. لن تتمكن من نسخ هذا الرابط بعد الآن، وتحتاج رابطاً جديداً لاحقاً."))return;P.busy=true;render(true);
