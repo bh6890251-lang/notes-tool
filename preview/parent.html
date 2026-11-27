@@ -228,7 +228,7 @@ function honorCard(){
 function top3Card(){
  const T=(ST.honor&&ST.honor.top3)||[];if(!T.length)return"";
  const md=["🥇","🥈","🥉"];
- return'<div class="card top3"><h3>⭐ أفضل ٣ طلاب هذا الأسبوع</h3>'+T.map((r,i)=>'<div class="tp"><span class="md">'+md[i]+'</span><div class="tn"><b>'+esc(r.n)+'</b><small>📖 حفظ '+esc(pgf(r.h))+' · 🔁 مراجعة '+esc(pgf(r.r))+' · ✅ '+nm(r.t)+' أيام تسميع</small></div><div class="pt">'+nm(r.p)+'<small>نقطة</small></div></div>').join("")+
+ return'<div class="card top3"><h3>⭐ أفضل ٣ طلاب هذا الأسبوع</h3>'+T.map((r,i)=>'<div class="tp"><span class="md">'+md[i]+'</span><div class="tn"><b>'+esc(r.n)+'</b><div class="sumrow"><span class="tag neu">📖 حفظ '+nm(r.h)+'</span><span class="tag neu">🔁 مراجعة '+nm(r.r)+'</span><span class="tag neu">✅ '+nm(r.t)+' أيام</span></div></div><div class="pt">'+nm(r.p)+'<small>نقطة</small></div></div>').join("")+
  '<div class="rule">طريقة الترتيب: كل صفحة حفظ جديد = ٢ نقطة، وكل صفحة مراجعة = نقطة، وكل يوم تسميع = نقطة. عند التساوي يُقدَّم الأعلى حفظاً ثم الأكثر التزاماً بالحضور. يشمل جميع طلاب الحلقة.</div></div>'}
 function dayCard(d){
  const s=STT[d.status]||[d.status,"neu","📌"],its=(d.items||[]);
