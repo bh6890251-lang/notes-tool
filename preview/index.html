@@ -53,6 +53,8 @@ html.dk .btn.rd{color:#2a0805}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-height:44px;padding:6px 14px;border-radius:22px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);font-weight:600;cursor:pointer}
 .chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+.ptchips .chips{overflow:visible;gap:6px;padding:2px 0 8px}.ptchips .chip{flex:1 1 0;min-width:0;padding:6px 2px;border-radius:16px;font-size:12.5px;line-height:1.25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;transition:background .25s,color .25s,transform .2s,box-shadow .25s}.ptchips .chip .pti{font-size:20px;line-height:1}.ptchips .chip:active{transform:scale(.94)}.ptchips .chip.on{box-shadow:0 4px 12px rgba(0,0,0,.18);animation:mo-sel .4s ease}.ptchips .chip .pcn{position:absolute;top:2px;inset-inline-end:6px;min-width:18px;height:18px;border-radius:9px;background:var(--au,#d9a21b);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+@keyframes ptl{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}@keyframes ptr{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}.ptpane.ptin-l{animation:ptl .32s cubic-bezier(.2,.8,.2,1)}.ptpane.ptin-r{animation:ptr .32s cubic-bezier(.2,.8,.2,1)}
 html.dk .chip.on{color:#06210f}
 @media(prefers-color-scheme:dark){html.auto .chip.on{color:#06210f}}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;border:1px solid var(--bd);border-radius:12px;overflow:hidden}
@@ -584,7 +586,7 @@ function dkAnim(){const rm=window.matchMedia&&matchMedia("(prefers-reduced-motio
 function afterRender(){bkBar();if(ui.tab==="reports"&&ui.sub.reports==="daily")dkAnim();if(ui.tab==="reports"&&ui.sub.reports==="exams")cu();if(ui.tab==="students"&&ui.sub.students==="honor")drawHb();}
 function go(t,sub){ui.tab=t;if(sub){ui.sub[t]=sub}render(false);window.scrollTo(0,0)}
 A.nav=el=>{if(ui.tab===el.dataset.t){window.scrollTo(0,0);return}if(ui.tab==="today")ui.flt=null;go(el.dataset.t)};
-A.sub=el=>{ui.sub[el.dataset.tab]=el.dataset.v;ui.prof=null;render(false);window.scrollTo(0,0)};
+A.sub=el=>{if(el.dataset.tab==="portal"){const o=SUBS_PT.map(x=>x[0]);ui.ptfx=o.indexOf(el.dataset.v)>o.indexOf(ptCur())?"l":"r"}ui.sub[el.dataset.tab]=el.dataset.v;ui.prof=null;render(false);window.scrollTo(0,0)};
 A.tgl=el=>{const k=el.dataset.k;ui.exp[k]=!ui.exp[k];const c=el.closest(".cc");if(c)c.classList.toggle("open",!!ui.exp[k])};
 
 /* ---- bars (backup reminder, storage error, first run) ---- */
@@ -1290,7 +1292,13 @@ A.dashRef=async()=>{await parLoad();await intLoad()};
 A.dashDone=el=>{const d=dashDone();d[el.dataset.id]=Date.now();try{localStorage.setItem(DONEKEY,JSON.stringify(d))}catch(e){toast("تعذّر الحفظ على هذا الجهاز");return}toast("تم");render(true)};
 A.dashInbox=()=>{const e=$("#intcard");if(e&&e.scrollIntoView)e.scrollIntoView({behavior:"smooth",block:"start"})};
 A.dashCopy=async el=>{const p=(ui.par.list||[]).find(x=>x.id==el.dataset.id);if(!p)return;const m=dashMsg(p);try{await navigator.clipboard.writeText(m);toast("تم نسخ الرسالة")}catch(e){const t=document.createElement("textarea");t.value=m;document.body.appendChild(t);t.select();try{document.execCommand("copy");toast("تم نسخ الرسالة")}catch(e2){toast("تعذّر النسخ")}t.remove()}};
-function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+dashCard()+pubCard()+intCard()+parCard()+pubSetCard()}
+const SUBS_PT=[["pub",'<span class="pti">📤</span>النشر'],["par",'<span class="pti">👨‍👩‍👧</span>الأولياء'],["act",'<span class="pti">💬</span>المتابعة'],["acc",'<span class="pti">⚙️</span>الحساب']];
+function ptCur(){const c=ui.sub.portal;if(c&&SUBS_PT.some(x=>x[0]===c))return c;return pubReady(pubCfg())?"pub":"acc"}
+function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();const ok=pubReady(pubCfg()),c=ptCur();
+ let b;if(c==="acc")b=pubSetCard();else if(!ok)b='<div class="card"><b>⚙️ أكمل إعداد الحساب أولاً</b><div class="mu">لتفعيل النشر والروابط والمتابعة، سجّل حسابك من تبويب «الحساب».</div><button type="button" class="btn w" style="margin-top:8px" data-a="sub" data-tab="portal" data-v="acc">فتح تبويب الحساب</button></div>';
+ else if(c==="pub")b=weekNav()+pubCard();else if(c==="par")b=parCard();else b=weekNav()+dashCard()+intCard();
+ const fx=ui.ptfx;if(fx)setTimeout(()=>{ui.ptfx=0},500);
+ return'<div class="ptchips">'+chipsH("portal",SUBS_PT,c)+'</div><div class="ptpane'+(fx?" ptin-"+fx:"")+'">'+b+'</div>'}
 function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
 /* top students of the week for the parent page: exactly what the honor board (لوحة الشرف) shows */
 function pubHonor(a){try{const d=dOf(a);d.setHours(12,0,0,0);const off=Math.round((d-wkStartOf(new Date()))/6048e5),H=honor(off);if(H.ks[0]!==a)return null;
