@@ -8,8 +8,10 @@ body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 var(--ft);direc
 button,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--au);outline-offset:2px}
 #app{max-width:640px;margin:0 auto;padding:0 12px}
-header{display:flex;align-items:center;gap:10px;padding:12px 4px 6px}
-header img{width:44px;height:44px;object-fit:contain;border-radius:10px;background:#fff;padding:2px}
+header{display:flex;align-items:center;gap:10px;padding:10px 4px 6px}
+.top{position:sticky;top:0;z-index:6;background:var(--bg);margin:0 -12px;padding:0 12px 4px}
+.top.sh{box-shadow:0 2px 6px rgba(0,0,0,.08)}
+header img{width:40px;height:40px;object-fit:contain;border-radius:10px;background:#fff;padding:2px}
 header b{display:block;font-size:17px;line-height:1.3}
 header small{color:var(--mu);font-size:14px}
 .card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:10px 0;box-shadow:var(--sh)}
@@ -92,7 +94,43 @@ header .bell{margin-inline-start:auto;position:relative;min-width:44px;min-heigh
 details.card>summary{font-weight:700;font-size:17px;cursor:pointer;min-height:32px;list-style-position:inside}
 .empty{text-align:center;padding:6px 0}
 
-</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
+.chips{gap:8px;padding:6px 0 4px}
+.chip{display:flex;align-items:center;gap:8px;min-height:52px;padding:6px 14px 6px 18px;border-radius:26px;font-size:17px;flex:1 1 0;justify-content:center;white-space:nowrap}
+.chip .av{width:32px;height:32px;border-radius:16px;background:var(--gl);color:var(--g);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex:none}
+.chip.on .av{background:#fff;color:var(--g)}
+.chip.on{box-shadow:0 2px 6px rgba(15,77,53,.3)}
+.pbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--gl);border-radius:14px;padding:8px 12px;margin:8px 0;font-size:15px}
+.pbar .t{flex:1;min-width:140px}
+.pbar .btn{min-height:44px;padding:6px 14px;font-size:15px}
+details.pbar{display:block}details.pbar summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
+.nav{margin:6px 0 4px}
+.nav .btn{min-width:84px;min-height:48px}
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:14px;margin:8px 0;box-shadow:var(--sh)}
+.sc .nm{font-size:20px;font-weight:800;line-height:1.3}
+.sc .plan{margin-top:10px;font-size:16px}
+.st4{display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px;border-top:1px solid var(--bd);padding-top:10px}
+.st4 div{text-align:center;border-inline-start:1px solid var(--bd);line-height:1.3}
+.st4 div:first-child{border-inline-start:0}
+.st4 b{display:block;font-size:22px;color:var(--g)}
+.st4 span{font-size:13px;color:var(--mu)}
+.wk{gap:6px}
+.wk button{flex:1;min-height:56px;text-align:center;border-radius:12px;padding:4px 0;background:var(--bg);border:1px solid var(--bd);font-size:12px;color:var(--mu);cursor:pointer}
+.wk button i{display:block;font-style:normal;font-size:20px;line-height:1.3}
+.sec{font-weight:800;font-size:18px;margin:16px 4px 6px}
+.dl{background:var(--cd);border:1px solid var(--bd);border-radius:16px;box-shadow:var(--sh);overflow:hidden}
+.dr{border-top:1px solid var(--bd)}.dr:first-child{border-top:0}
+.dsum{display:flex;align-items:center;gap:10px;width:100%;min-height:60px;padding:8px 12px;background:none;border:0;text-align:start;cursor:pointer;color:inherit}
+.dsum .dic{font-size:26px;flex:none}
+.dsum .mid{flex:1;min-width:0;line-height:1.35}
+.dsum .mid b{display:block}.dsum .mid small{color:var(--mu);font-size:13px}
+.dsum .chev{flex:none;color:var(--mu);font-size:18px;transition:transform .15s}
+.dr.open .chev{transform:rotate(180deg)}
+.dr.cur{background:var(--gl)}
+.dbody{padding:0 12px 12px}
+.dbody .itm{margin:6px 0}
+.tg{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--au);color:#2b2000;font-size:12px;font-weight:800;margin-inline-start:6px}
+
+</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><div class="top" id="top"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="kb"></div></div><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
 <script>
 "use strict";
 const URL_="https://tcvlffipaxrxvlmaliaq.supabase.co",KEY="sb_publishable_Nno92kn3tJq0GTcfLqYQjg_7_3YJG4b";
@@ -104,7 +142,7 @@ const MON=["يناير","فبراير","مارس","أبريل","مايو","يو�
 const DAY=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const DAYS=["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"];
 const TOKEN=(()=>{const m=/(?:^#|&)k=([^&]+)/.exec(location.hash);let t=m?decodeURIComponent(m[1]).trim():"";if(!t){try{t=localStorage.getItem("hq_tok")||""}catch(e){}}return t})();
-let ST={parent:"",kids:[],sid:null,week:null,reps:[],busy:false,err:"",view:"rep",notes:[],newIds:{},unseen:0,honor:null,weeks:[],push:"",canInstall:false};
+let ST={parent:"",kids:[],sid:null,week:null,reps:[],busy:false,err:"",view:"rep",notes:[],newIds:{},unseen:0,honor:null,weeks:[],push:"",canInstall:false,open:{}};
 function pd(s){const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)}
 function fd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function dl(s){const d=pd(s);return nm(d.getDate())+" "+MON[d.getMonth()]}
@@ -151,15 +189,14 @@ async function enablePush(){
   else toast("لم يتم السماح بالتنبيهات")}catch(e){toast("تعذّر تفعيل التنبيهات")}
  draw()}
 function pushCard(){
- let h="";
- if(!standalone()&&deferredInstall)h+='<button class="btn s" data-a="install">📲 ثبّت التطبيق على هاتفك</button>';
+ const inst=(!standalone()&&deferredInstall)?'<button class="btn s" data-a="install">📲 ثبّت التطبيق</button>':"";
  if(!pushOK()){
-  if(isIOS&&!standalone())return'<div class="pc"><b>🔔 لتصلك التنبيهات على الآيفون</b><div class="mu" style="margin-top:4px">١) افتح هذا الرابط من متصفح Safari. ٢) اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية». ٣) افتح التطبيق من الشاشة الرئيسية ثم اضغط «فعّل التنبيهات». (يلزم iOS 16.4 أو أحدث)</div></div>';
-  return h?'<div class="pc">'+h+'</div>':""}
+  if(isIOS&&!standalone())return'<details class="pbar"><summary>🔔 لتصلك التنبيهات على الآيفون</summary><div class="mu">١) افتح هذا الرابط من متصفح Safari. ٢) اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية». ٣) افتح التطبيق من الشاشة الرئيسية ثم اضغط «فعّل التنبيهات». (يلزم iOS 16.4 أو أحدث)</div></details>';
+  return inst?'<div class="pbar">'+inst+'</div>':""}
  const p=Notification.permission;
- if(p==="granted")return h?'<div class="pc">'+h+'</div>':"";
- if(p==="denied")return'<div class="pc"><b>🔕 التنبيهات محظورة</b><div class="mu">لتفعيلها: من إعدادات المتصفح ← إعدادات الموقع ← الإشعارات ← السماح.</div>'+(h?'<div class="row">'+h+'</div>':"")+'</div>';
- return'<div class="pc"><b>🔔 تنبيهات التقرير</b><div class="mu" style="margin-top:4px">يصلك تنبيه فور نشر تقرير ابنك، وتذكير إن لم تفتحه.</div><div class="row"><button class="btn" data-a="enable">🔔 فعّل التنبيهات</button>'+h+'</div></div>'}
+ if(p==="granted")return inst?'<div class="pbar"><span class="t mu">التنبيهات مفعّلة ✅</span>'+inst+'</div>':"";
+ if(p==="denied")return'<details class="pbar"><summary>🔕 التنبيهات محظورة</summary><div class="mu">لتفعيلها: من إعدادات المتصفح ← إعدادات الموقع ← الإشعارات ← السماح.</div></details>';
+ return'<div class="pbar"><span class="t">🔔 يصلك تنبيه عند نشر تقرير ابنك</span><button class="btn" data-a="enable">فعّل التنبيهات</button>'+inst+'</div>'}
 
 async function loadNotes(){
  try{const j=await rpc("parent_notifications",{p_token:TOKEN});
@@ -171,7 +208,7 @@ async function loadNotes(){
 function bell(){const b=$("#bell");if(!b)return;b.classList.remove("hid");$("#bd").textContent=ST.unseen>0?nm(Math.min(ST.unseen,99)):""}
 function ago(iso){const d=new Date(iso),t=new Date(),m=Math.round((t-d)/60000);if(m<1)return"الآن";if(m<60)return"قبل "+nm(m)+" دقيقة";const h=Math.round(m/60);if(h<24)return"قبل "+nm(h)+" ساعة";return nm(d.getDate())+" "+MON[d.getMonth()]}
 function drawNotes(){
- let h='<div class="nav"><button class="btn s" data-a="back">‹ رجوع</button><div class="mid">🔔 الإشعارات</div><span style="min-width:44px"></span></div>'+pushCard();
+ let h='<div class="nav"><button class="btn s" data-a="back">رجوع ›</button><div class="mid">🔔 الإشعارات</div><span style="min-width:44px"></span></div>'+pushCard();
  if(!ST.notes.length)h+='<div class="card mu" style="text-align:center">لا توجد إشعارات بعد. سيظهر هنا كل تقرير جديد لأبنائك.</div>';
  ST.notes.forEach(n=>{const nw=ST.newIds[n.id];
   h+='<button class="nt'+(nw?" new":"")+'" data-a="note" data-sid="'+esc(n.student_id)+'" data-w="'+esc(n.week_start||"")+'"><span class="ni">📄</span><span><b>'+esc(n.title)+'</b>'+esc(n.body)+'<br><small>'+esc(ago(n.created_at))+'</small></span>'+(nw?'<span class="dot" aria-label="جديد"></span>':"")+'</button>'});
@@ -200,7 +237,7 @@ async function load(){
   const r=ST.reps.find(x=>x.student_id==ST.sid);
   ST.honor=null;
   if(r)await loadMine();try{const h=await rpc("parent_honor",{p_token:TOKEN,p_week_start:ST.week});ST.honor=h.honor||null}catch(e){}
-  ST.busy=false;
+  ST.busy=false;autoOpen();
   if(r)rpc("parent_record_view",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week}).catch(()=>{})}
  catch(e){ST.busy=false;ST.reps=[];ST.err=fail(e)}
  draw()}
@@ -222,55 +259,61 @@ function honorCard(){
  const H=ST.honor;if(!H||((H.hifz||[]).length+(H.commit||[]).length)==0)return"";
  const col=["#d9a21b","#9aa5a8","#b87333","#ddd","#ddd"];
  const lst=(L,f)=>L.map((r,i)=>'<div class="hb"><span class="rank" style="background:'+col[i]+'">'+nm(i+1)+'</span><b style="flex:1">'+esc(r.n)+'</b><small class="mu">'+f(r)+'</small></div>').join("");
- return'<details class="card"><summary>🏆 لوحة الشرف</summary>'+
+ return'<details class="sc"><summary>🏆 لوحة الشرف</summary>'+
  ((H.hifz||[]).length?'<div class="mgh">🥇 الأكثر حفظاً</div>'+lst(H.hifz,r=>esc(pgf(r.h))):"")+
  ((H.commit||[]).length?'<div class="mgh">🌟 الأكثر التزاماً</div>'+lst(H.commit,r=>nm(Math.round(r.rate))+"٪ حضور · "+nm(r.t)+" أيام تسميع"):"")+'</details>'}
 function top3Card(){
  const T=(ST.honor&&ST.honor.top3)||[];if(!T.length)return"";
  const md=["🥇","🥈","🥉"];
- return'<div class="card top3"><h3>⭐ أفضل ٣ طلاب هذا الأسبوع</h3>'+T.map((r,i)=>'<div class="tp"><span class="md">'+md[i]+'</span><div class="tn"><b>'+esc(r.n)+'</b><div class="sumrow"><span class="tag neu">📖 حفظ '+nm(r.h)+'</span><span class="tag neu">🔁 مراجعة '+nm(r.r)+'</span><span class="tag neu">✅ '+nm(r.t)+' أيام</span></div></div><div class="pt">'+nm(r.p)+'<small>نقطة</small></div></div>').join("")+
+ return'<div class="sec">⭐ أفضل ٣ طلاب هذا الأسبوع</div><div class="sc top3">'+T.map((r,i)=>'<div class="tp"><span class="md">'+md[i]+'</span><div class="tn"><b>'+esc(r.n)+'</b><div class="sumrow"><span class="tag neu">📖 حفظ '+nm(r.h)+'</span><span class="tag neu">🔁 مراجعة '+nm(r.r)+'</span><span class="tag neu">✅ '+nm(r.t)+' أيام</span></div></div><div class="pt">'+nm(r.p)+'<small>نقطة</small></div></div>').join("")+
  '<div class="rule">طريقة الترتيب: كل صفحة حفظ جديد = ٢ نقطة، وكل صفحة مراجعة = نقطة، وكل يوم تسميع = نقطة. عند التساوي يُقدَّم الأعلى حفظاً ثم الأكثر التزاماً بالحضور. يشمل جميع طلاب الحلقة.</div></div>'}
-function dayCard(d){
+function dayRow(d){
  const s=STT[d.status]||[d.status,"neu","📌"],its=(d.items||[]);
  let hp=0,rp=0;its.forEach(i=>{const p=+i.pages||0;if(i.type=="review")rp+=p;else hp+=p});
- const dt=pd(d.day_date);
- let h='<div class="dcard '+(s[1]=="ok"?"":s[1])+'"><div class="dh"><div class="dn"><span class="dic">'+s[2]+'</span><div><b>'+DAY[dt.getDay()]+'</b><small>'+dl(d.day_date)+'</small></div></div><span class="tag '+s[1]+'">'+esc(s[0])+'</span></div>';
- if(its.length){
+ const dt=pd(d.day_date),isT=d.day_date==fd(new Date()),op=!!ST.open[d.day_date];
+ const sub=[];if(hp>0)sub.push("📖 "+pgf(hp));if(rp>0)sub.push("🔁 "+pgf(rp));
+ let h='<div class="dr'+(op?" open":"")+(isT?" cur":"")+'" id="d-'+esc(d.day_date)+'"><button class="dsum" data-a="tgl" data-d="'+esc(d.day_date)+'" aria-expanded="'+op+'"><span class="dic">'+s[2]+'</span><span class="mid"><b>'+DAY[dt.getDay()]+(isT?'<span class="tg">اليوم</span>':"")+'</b><small>'+dl(d.day_date)+(sub.length?" · "+sub.join(" · "):"")+'</small></span><span class="tag '+s[1]+'">'+esc(s[0])+'</span><span class="chev">⌄</span></button>';
+ if(op){h+='<div class="dbody">';
   its.forEach(i=>{const rv=i.type=="review";
    h+='<div class="itm'+(rv?" review":"")+'"><span class="ii">'+(rv?"🔁":i.type=="hifz"?"📖":"📌")+'</span><div class="ib"><b>'+esc(i.name||"")+'</b><small>'+(rv?"مراجعة":i.type=="hifz"?"حفظ جديد":"تسميع")+(i.ay?" · الآيات: "+esc(nm(i.ay)):"")+'</small></div>'+(i.pages?'<span class="pg">'+esc(pgf(i.pages))+'</span>':"")+'</div>'});
-  if(hp>0&&rp>0)h+='<div class="sumrow"><span class="tag">📖 حفظ '+esc(pgf(hp))+'</span><span class="tag neu">🔁 مراجعة '+esc(pgf(rp))+'</span></div>'}
- else if(d.status=="heard")h+='<div class="mu" style="margin-top:6px">لا توجد تفاصيل لهذا اليوم.</div>';
- if(d.note)h+='<div class="note">📝 '+esc(d.note)+'</div>';
- return h+reactBox(d.day_date)+'</div>'}
+  if(!its.length&&d.status=="heard")h+='<div class="mu">لا توجد تفاصيل لهذا اليوم.</div>';
+  if(!its.length&&d.status!="heard")h+='<div class="mu">لا يوجد تسميع في هذا اليوم.</div>';
+  if(d.note)h+='<div class="note">📝 '+esc(d.note)+'</div>';
+  h+=reactBox(d.day_date)+'</div>'}
+ return h+'</div>'}
 function draw(){
- const M=$("#main");bell();
- if(ST.view=="notes"&&ST.kids.length){drawNotes();return}
+ const M=$("#main"),KB=$("#kb");bell();
+ if(ST.view=="notes"&&ST.kids.length){KB.innerHTML="";drawNotes();return}
+ KB.innerHTML=ST.kids.length>1?'<div class="chips" role="tablist">'+ST.kids.map(k=>'<button class="chip'+(k.student_id==ST.sid?" on":"")+'" role="tab" aria-selected="'+(k.student_id==ST.sid)+'" data-a="kid" data-id="'+esc(k.student_id)+'"><span class="av">'+esc(String(k.first_name||"").trim().charAt(0))+'</span>'+esc(k.first_name)+'</button>').join("")+'</div>':"";
  let h=pushCard();
- if(ST.kids.length>1)h+='<div class="chips">'+ST.kids.map(k=>'<button class="chip'+(k.student_id==ST.sid?" on":"")+'" data-a="kid" data-id="'+esc(k.student_id)+'">'+esc(k.first_name)+'</button>').join("")+'</div>';
  const kid=ST.kids.find(k=>k.student_id==ST.sid)||{};
  const we=shift(ST.week,5),pw=prevW(),nw=nextW();
- h+='<div class="nav"><button class="btn s" data-a="prev"'+(pw?"":" disabled")+' aria-label="الأسبوع السابق">‹ السابق</button><div class="mid">'+(ST.week==curWeek()?"هذا الأسبوع":ST.week==lastWeek()?"الأسبوع الماضي":"أسبوع")+'<small>'+dl(ST.week)+" – "+dl(we)+'</small></div><button class="btn s" data-a="next"'+(nw?"":" disabled")+' aria-label="الأسبوع التالي">التالي ›</button></div>';
+ h+='<div class="nav"><button class="btn s" data-a="prev"'+(pw?"":" disabled")+' aria-label="الأسبوع السابق">السابق ›</button><div class="mid">'+(ST.week==curWeek()?"هذا الأسبوع":ST.week==lastWeek()?"الأسبوع الماضي":"أسبوع")+'<small>'+dl(ST.week)+" – "+dl(we)+'</small></div><button class="btn s" data-a="next"'+(nw?"":" disabled")+' aria-label="الأسبوع التالي">‹ التالي</button></div>';
  if(ST.busy){M.innerHTML=h+'<div class="ctr mu">جاري التحميل...</div>';return}
  if(ST.err){M.innerHTML=h+'<div class="err">'+esc(ST.err)+'</div><div class="ctr"><button class="btn" data-a="retry">إعادة المحاولة</button></div>';return}
  const r=(ST.reps||[]).find(x=>x.student_id==ST.sid);
- if(!r){M.innerHTML=h+'<div class="card empty"><h3>'+esc(kid.first_name||"")+'</h3><div class="mu">لا يوجد تقرير منشور لهذا الأسبوع بعد.'+(pw?' يمكنك الرجوع لأسبوع سابق بزر «السابق».':"")+'</div></div>'+top3Card();return}
+ if(!r){M.innerHTML=h+'<div class="sc empty"><div class="nm">'+esc(kid.first_name||"")+'</div><div class="mu">لا يوجد تقرير منشور لهذا الأسبوع بعد.'+(pw?' يمكنك الرجوع لأسبوع سابق بزر «السابق».':"")+'</div></div>'+top3Card();return}
  const g=r.goal_pages,a=r.achieved_pages,pct=g>0&&a!=null?Math.min(100,Math.round(a/g*100)):null;
- h+='<div class="card"><h3>'+esc(r.first_name)+'</h3><div class="mu">'+esc([r.center_name,r.halaqa_name].filter(Boolean).join(" · "))+'</div>';
- if(g>0)h+='<div style="margin-top:8px"><b>الخطة: '+nm(g)+' صفحة'+(r.goal_type?" ("+(r.goal_type=="hifz"?"حفظ":r.goal_type=="review"?"مراجعة":esc(r.goal_type))+")":"")+'</b> · <b>المنجز: '+nm(a==null?0:a)+'</b>'+(pct!=null?' ('+nm(pct)+'٪)':"")+'<div class="bar"><i style="width:'+(pct||0)+'%"></i></div></div>';
- h+='<div class="g4"><div class="stat"><b>'+nm(r.hifz_pages||0)+'</b><span>📖 حفظ</span></div><div class="stat"><b>'+nm(r.review_pages||0)+'</b><span>🔁 مراجعة</span></div><div class="stat"><b>'+nm(r.present_days||0)+'</b><span>✅ حضور</span></div><div class="stat"><b>'+nm((r.absent_days||0)+(r.excused_days||0))+'</b><span>❌ غياب'+((r.excused_days||0)>0?' ('+nm(r.excused_days)+' بعذر)':"")+'</span></div></div>';
- const ds=r.days||[];
- if(ds.length)h+='<div class="wk">'+ds.map(d=>{const s=STT[d.status]||["","neu","📌"];return'<div><i>'+s[2]+'</i>'+DAYS[pd(d.day_date).getDay()]+'</div>'}).join("")+'</div>';
- if(r.rating!=null)h+='<div style="margin-top:8px">⭐ التقييم: <b>'+nm(r.rating)+' / ١٠</b></div>';
+ h+='<div class="sc"><div class="nm">'+esc(r.first_name)+'</div><div class="mu">'+esc([r.center_name,r.halaqa_name].filter(Boolean).join(" · "))+'</div>';
+ if(g>0)h+='<div class="plan"><b>الخطة: '+nm(g)+' صفحة'+(r.goal_type?" ("+(r.goal_type=="hifz"?"حفظ":r.goal_type=="review"?"مراجعة":esc(r.goal_type))+")":"")+'</b> · <b>المنجز: '+nm(a==null?0:a)+'</b>'+(pct!=null?' ('+nm(pct)+'٪)':"")+'<div class="bar"><i style="width:'+(pct||0)+'%"></i></div></div>';
+ h+='<div class="st4"><div><b>'+nm(r.hifz_pages||0)+'</b><span>📖 حفظ</span></div><div><b>'+nm(r.review_pages||0)+'</b><span>🔁 مراجعة</span></div><div><b>'+nm(r.present_days||0)+'</b><span>✅ حضور</span></div><div><b>'+nm((r.absent_days||0)+(r.excused_days||0))+'</b><span>❌ غياب'+((r.excused_days||0)>0?' ('+nm(r.excused_days)+' بعذر)':"")+'</span></div></div>';
+ const ds=(r.days||[]).slice().sort((x,y)=>x.day_date<y.day_date?1:-1),dsa=ds.slice().reverse();
+ if(dsa.length)h+='<div class="wk">'+dsa.map(d=>{const s=STT[d.status]||["","neu","📌"];return'<button data-a="goto" data-d="'+esc(d.day_date)+'" aria-label="'+DAY[pd(d.day_date).getDay()]+'"><i>'+s[2]+'</i>'+DAYS[pd(d.day_date).getDay()]+'</button>'}).join("")+'</div>';
+ if(r.rating!=null)h+='<div style="margin-top:10px">⭐ التقييم: <b>'+nm(r.rating)+' / ١٠</b></div>';
  if(r.upcoming_exam)h+='<div style="margin-top:6px">📝 الاختبار القادم: <b>'+esc(r.upcoming_exam)+'</b></div>';
  if(r.teacher_note)h+='<div class="note">'+esc(r.teacher_note)+'</div>';
  h+=reactBox("")+'</div>';
+ h+='<div class="sec">📅 التسميع اليومي <span class="mu" style="font-weight:400;font-size:14px">(الأحدث أولاً)</span></div>';
+ if(!ds.length)h+='<div class="sc mu">لا توجد أيام مسجلة.</div>';
+ else h+='<div class="dl">'+ds.map(dayRow).join("")+'</div>';
  h+=top3Card();
- h+='<div class="card"><h3>📅 التسميع اليومي</h3>';
- if(!ds.length)h+='<div class="mu">لا توجد أيام مسجلة.</div>';
- ds.forEach(d=>{h+=dayCard(d)});
- h+='</div>';
  h+=honorCard();
  M.innerHTML=h}
+function autoOpen(){
+ ST.open={};const r=(ST.reps||[]).find(x=>x.student_id==ST.sid);if(!r)return;
+ const ds=(r.days||[]).slice().sort((x,y)=>x.day_date<y.day_date?1:-1);
+ const t=fd(new Date());let d=ds.find(x=>x.day_date==t&&x.status!="off")||ds.find(x=>x.status=="heard"||(x.items||[]).length)||ds[0];
+ if(d)ST.open[d.day_date]=1}
 document.addEventListener("click",async ev=>{
  const b=ev.target.closest("[data-a]");if(!b||b.disabled)return;const a=b.dataset.a;
  if(a=="bell"){ST.view="notes";ST.unseen=0;draw();window.scrollTo(0,0)}
@@ -278,10 +321,12 @@ document.addEventListener("click",async ev=>{
  else if(a=="note"){const sid=b.dataset.sid,w=b.dataset.w;if(sid&&ST.kids.some(k=>k.student_id==sid))ST.sid=sid;if(w)ST.week=w;ST.view="rep";load();window.scrollTo(0,0)}
  else if(a=="enable"){enablePush()}
  else if(a=="install"){if(deferredInstall){deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;ST.canInstall=false;draw()}}
- else if(a=="kid"){ST.sid=b.dataset.id;draw();load()}
+ else if(a=="kid"){ST.sid=b.dataset.id;draw();load();window.scrollTo(0,0)}
  else if(a=="prev"){const w=prevW();if(w){ST.week=w;load()}}
  else if(a=="next"){const w=nextW();if(w){ST.week=w;load()}}
  else if(a=="retry"){load()}
+ else if(a=="tgl"){const d=b.dataset.d;if(ST.open[d])delete ST.open[d];else ST.open[d]=1;draw()}
+ else if(a=="goto"){const d=b.dataset.d;ST.open[d]=1;draw();const e=document.getElementById("d-"+d);if(e){const t=$("#top").offsetHeight+6;window.scrollTo({top:e.getBoundingClientRect().top+scrollY-t,behavior:"smooth"})}}
  else if(a=="heart"){const d=b.dataset.d||null;b.disabled=true;
   try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"mashallah",p_comment:null});addMine({kind:"mashallah",day_date:d,comment:null});toast("وصلت ما شاء الله للمعلم ❤️");draw()}
   catch(e){if(e.code=="already_reacted"){addMine({kind:"mashallah",day_date:d,comment:null});draw()}else b.disabled=false;toast(fail(e))}}
