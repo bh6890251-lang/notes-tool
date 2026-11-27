@@ -1207,7 +1207,7 @@ async function intLoad(){const I=ui.int,[a]=wrange();if(I.busy)return;I.busy=tru
  I.busy=false;render(true)}
 function intCard(){const I=ui.int,c=pubCfg(),[a,b]=wrange();if(!pubReady(c))return"";
  if(I.key!==a&&!I.busy)setTimeout(intLoad,0);
- let h='<div class="card"><div class="flex" style="justify-content:space-between"><b>💬 تفاعلات الأهل (أسبوع '+dlab(a)+")</b><button type=\"button\" class=\"btn s\" data-a=\"intRef\""+(I.busy?" disabled":"")+">"+(I.busy?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
+ let h='<div class="card" id="intcard"><div class="flex" style="justify-content:space-between"><b>💬 تفاعلات الأهل (أسبوع '+dlab(a)+")</b><button type=\"button\" class=\"btn s\" data-a=\"intRef\""+(I.busy?" disabled":"")+">"+(I.busy?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
  if(I.err)h+='<div class="bar err">'+esc(I.err)+"</div>";
  const d=I.data;
  if(d){const it=d.items||[],vw=d.views||[],hs=it.filter(x=>x.kind=="mashallah"),cm=it.filter(x=>x.kind=="comment");
@@ -1222,7 +1222,48 @@ function intCard(){const I=ui.int,c=pubCfg(),[a,b]=wrange();if(!pubReady(c))retu
   if(miss.length)h+='<div class="mu" style="margin-top:8px"><b>لم يفتح بعد:</b> '+miss.map(esc).join("، ")+"</div>"}
  return h+"</div>"}
 A.intRef=()=>intLoad();
-function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+pubCard()+intCard()+parCard()+pubSetCard()}
+/* ===== parent portal, phase 8: teacher dashboard (who opened, 14 days, pending requests, reminders). No new server code: uses parent_list + teacher_interactions ===== */
+const DONEKEY="prev_halaqa3_done"; /* local only: comments the teacher marked as handled */
+function dashDone(){try{return JSON.parse(localStorage.getItem(DONEKEY)||"{}")||{}}catch(e){return{}}}
+function dashDays(s){return s?Math.max(0,Math.floor((Date.now()-new Date(s).getTime())/864e5)):null}
+function dashAgo(n){return n==null?"لم يفتح بعد":n==0?"اليوم":n==1?"أمس":n==2?"قبل يومين":n<=10?"قبل "+n+" أيام":"قبل "+n+" يوماً"}
+function dashMsg(p){const n=dashDays(p.last_viewed_at),ch=(p.children||[]).map(x=>x.first_name).join(" و"),nw=ui.par.nw;
+ let m="السلام عليكم ورحمة الله وبركاته، "+p.display_name+".\nنذكّركم بمتابعة تقرير الحلقة الأسبوعي"+(ch?" لـ"+ch:"")+". ";
+ m+=n==null?"لم يُفتح الرابط بعد.":"آخر مرة فُتح فيها التقرير كانت "+dashAgo(n)+".";
+ if(nw&&nw.name==p.display_name&&nw.url)m+="\nرابط التقرير: "+nw.url;
+ return m+"\nجزاكم الله خيراً، ونسأل الله أن يبارك في أبنائكم."}
+function dashCard(){const c=pubCfg();if(!pubReady(c))return"";const P=ui.par,I=ui.int,L=(P.list||[]).filter(p=>!p.revoked);
+ if(P.list===null&&!P.busy)setTimeout(parLoad,0);
+ let h='<div class="card" id="dashcard" style="border-color:var(--g);border-width:2px"><div class="flex" style="justify-content:space-between"><b>📊 لوحة المعلم</b><button type="button" class="btn s" data-a="dashRef"'+((P.busy||I.busy)?" disabled":"")+">"+((P.busy||I.busy)?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
+ if(P.err)h+='<div class="bar err">'+esc(P.err)+"</div>";
+ if(P.list===null){return h+'<div class="mu">جاري التحميل...</div></div>'}
+ const opened=L.filter(p=>p.last_viewed_at).sort((a,b)=>new Date(b.last_viewed_at)-new Date(a.last_viewed_at)),
+  stale=L.filter(p=>!p.last_viewed_at||dashDays(p.last_viewed_at)>=14).sort((a,b)=>(a.last_viewed_at?new Date(a.last_viewed_at).getTime():0)-(b.last_viewed_at?new Date(b.last_viewed_at).getTime():0)),
+  rem=stale.filter(p=>(p.children||[]).length),done=dashDone(),
+  cm=((I.data&&I.data.items)||[]).filter(x=>x.kind=="comment"),pend=cm.filter(x=>!done[x.id]);
+ h+='<div class="flex" style="gap:6px;flex-wrap:wrap;margin:8px 0"><span class="chip">👁️ فتحوا: '+opened.length+'</span><span class="chip">⏳ لم يفتحوا منذ 14 يوماً: '+stale.length+'</span><span class="chip">💬 طلبات معلقة: '+pend.length+'</span><span class="chip">🔔 يحتاج تذكير: '+rem.length+"</span></div>";
+ h+='<div class="mu"><b>١) من فتح التقرير</b></div>';
+ if(!opened.length)h+='<div class="mu">لم يفتح أحد التقرير بعد.</div>';
+ opened.forEach(p=>{const n=dashDays(p.last_viewed_at);h+='<div style="margin:4px 0">✅ <b>'+esc(p.display_name)+"</b> <span class='mu'>· آخر فتح: "+dashAgo(n)+" · "+p.views+" مرة</span></div>"});
+ h+='<div class="mu" style="margin-top:10px"><b>٢) لم يفتح منذ 14 يوماً أو أكثر</b></div>';
+ if(!stale.length)h+='<div class="mu">🎉 الجميع فتح التقرير خلال آخر 14 يوماً.</div>';
+ stale.forEach(p=>{const n=dashDays(p.last_viewed_at);h+='<div style="margin:4px 0">⚠️ <b>'+esc(p.display_name)+"</b> <span class='mu'>· "+(n==null?"لم يفتح الرابط أبداً":"آخر فتح قبل "+n+" يوماً")+"</span></div>"});
+ h+='<div class="mu" style="margin-top:10px"><b>٣) الطلبات المعلقة</b> (تعليقات الأهل على الأسبوع المختار)</div>';
+ if(I.err)h+='<div class="bar err">'+esc(I.err)+"</div>";
+ if(!I.data&&!I.err)h+='<div class="mu">جاري التحميل...</div>';
+ else if(!pend.length)h+='<div class="mu">لا توجد طلبات معلقة'+(cm.length?" (تمت معالجة "+cm.length+")":"")+".</div>";
+ pend.forEach(x=>{h+='<div class="card" style="margin:6px 0"><b>💬 '+esc(x.parent)+"</b> <span class='mu'>عن "+esc(x.student)+'</span><div style="white-space:pre-wrap;margin-top:4px">'+esc(x.comment)+'</div><button type="button" class="btn s" style="margin-top:6px" data-a="dashDone" data-id="'+esc(x.id)+'">✔️ تمت المعالجة</button></div>'});
+ if(cm.length||pend.length)h+='<div style="margin-top:4px"><button type="button" class="btn s" data-a="dashInbox">💬 فتح تفاعلات الأهل كاملة</button></div>';
+ h+='<div class="mu" style="margin-top:10px"><b>٤) يحتاج تذكير</b> (لم يفتح منذ 14 يوماً أو أكثر)</div>';
+ if(!rem.length)h+='<div class="mu">لا أحد يحتاج تذكيراً الآن.</div>';
+ else h+='<div class="mu">انسخ الرسالة أو افتح واتساب ثم اختر ولي الأمر. لا تُحفظ أرقام الهواتف في التطبيق.</div>';
+ rem.forEach(p=>{const m=dashMsg(p);h+='<div class="card" style="margin:6px 0"><b>🔔 '+esc(p.display_name)+'</b><div style="white-space:pre-wrap;margin-top:6px;background:var(--gl);border-radius:10px;padding:8px;font-size:15px">'+esc(m)+'</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="dashCopy" data-id="'+esc(p.id)+'">📋 نسخ الرسالة</button><a class="btn s" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m)+'">واتساب</a></div></div>'});
+ return h+"</div>"}
+A.dashRef=async()=>{await parLoad();await intLoad()};
+A.dashDone=el=>{const d=dashDone();d[el.dataset.id]=Date.now();try{localStorage.setItem(DONEKEY,JSON.stringify(d))}catch(e){toast("تعذّر الحفظ على هذا الجهاز");return}toast("تم");render(true)};
+A.dashInbox=()=>{const e=$("#intcard");if(e&&e.scrollIntoView)e.scrollIntoView({behavior:"smooth",block:"start"})};
+A.dashCopy=async el=>{const p=(ui.par.list||[]).find(x=>x.id==el.dataset.id);if(!p)return;const m=dashMsg(p);try{await navigator.clipboard.writeText(m);toast("تم نسخ الرسالة")}catch(e){const t=document.createElement("textarea");t.value=m;document.body.appendChild(t);t.select();try{document.execCommand("copy");toast("تم نسخ الرسالة")}catch(e2){toast("تعذّر النسخ")}t.remove()}};
+function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+dashCard()+pubCard()+intCard()+parCard()+pubSetCard()}
 function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
 /* top students of the week for the parent page: exactly what the honor board (لوحة الشرف) shows */
 function pubHonor(a){try{const d=dOf(a);d.setHours(12,0,0,0);const off=Math.round((d-wkStartOf(new Date()))/6048e5),H=honor(off);if(H.ks[0]!==a)return null;
