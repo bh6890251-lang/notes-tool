@@ -130,7 +130,7 @@ details.pbar{display:block}details.pbar summary{cursor:pointer;min-height:44px;d
 .dbody .itm{margin:6px 0}
 .tg{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--au);color:#2b2000;font-size:12px;font-weight:800;margin-inline-start:6px}
 
-</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><div class="top" id="top"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="kb"></div></div><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
+</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><div class="top" id="top"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="off" class="hid" style="background:#fff3cd;color:#664d03;border:1px solid #ffe69c;padding:8px 12px;margin:6px 10px;border-radius:10px;font-size:14px;text-align:center"></div><div id="kb"></div></div><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
 <script>
 "use strict";
 const URL_="https://tcvlffipaxrxvlmaliaq.supabase.co",KEY="sb_publishable_Nno92kn3tJq0GTcfLqYQjg_7_3YJG4b";
@@ -153,13 +153,23 @@ function shift(w,n){const d=pd(w);d.setDate(d.getDate()+n);return fd(d)}
 function toast(t){const e=$("#tt");e.textContent=t;e.classList.remove("hid");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add("hid"),3500)}
 const pgf=x=>{x=Math.round(+x*100)/100;if(!(x>0))return"٠ صفحة";return nm(x)+(Number.isInteger(x)&&x>=3&&x<=10?" صفحات":" صفحة")};
 const ERR={bad_token:"هذا الرابط غير صحيح. تأكد أنك فتحته كاملاً كما وصلك.",revoked:"تم إيقاف هذا الرابط. تواصل مع معلم الحلقة للحصول على رابط جديد.",expired:"انتهت صلاحية هذا الرابط. تواصل مع معلم الحلقة للحصول على رابط جديد.",locked:"الرابط موقوف مؤقتاً. حاول بعد قليل.",rate_limited:"محاولات كثيرة. حاول بعد عدة دقائق.",not_your_child:"هذا الطالب غير مرتبط برابطك.",comment_rate_limited:"أرسلت تعليقات كثيرة. حاول بعد ساعة.",bad_comment:"التعليق فارغ أو أطول من ٢٠٠ حرف.",already_reacted:"أرسلت ما شاء الله من قبل ❤️"};
+const CF={parent_login:1,parent_weeks:1,parent_weekly:1,parent_honor:1,parent_mine:1,parent_notifications:1};
+function th(){let h=5381,s=TOKEN||"";for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return(h>>>0).toString(36)}
+function ck(fn,b){const o=Object.assign({},b);delete o.p_token;return"hq_c:"+th()+":"+fn+":"+JSON.stringify(o)}
+function cput(fn,b,j){if(!CF[fn])return;try{localStorage.setItem(ck(fn,b),JSON.stringify({t:Date.now(),v:j}))}catch(e){}}
+function cget(fn,b){if(!CF[fn])return null;try{const s=localStorage.getItem(ck(fn,b));return s?JSON.parse(s):null}catch(e){return null}}
+function cpurge(){try{Object.keys(localStorage).filter(k=>k.indexOf("hq_c:")==0).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+let OFFT=0;
+function showOff(){const e=document.getElementById("off");if(!e)return;if(OFFT){e.textContent="📴 لا يوجد اتصال بالإنترنت. تُعرض آخر بيانات محدّثة ("+ago(new Date(OFFT).toISOString())+"). ستتحدّث تلقائياً عند عودة الاتصال.";e.classList.remove("hid")}else e.classList.add("hid")}
+function offOn(t){OFFT=OFFT?Math.min(OFFT,t):t;showOff()}
+function offOff(){if(OFFT){OFFT=0;showOff()}}
 async function rpc(fn,body){
  const h={"Content-Type":"application/json",apikey:KEY};
  let r,j=null;const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
- try{r=await fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(body),signal:ctl.signal})}catch(e){clearTimeout(tm);throw{code:"net"}}
+ try{r=await fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(body),signal:ctl.signal})}catch(e){clearTimeout(tm);const c=cget(fn,body);if(c){offOn(c.t);return c.v}throw{code:"net"}}
  clearTimeout(tm);j=await r.json().catch(()=>null);
- if(!r.ok){const m=(j&&(j.message||""))+"";const k=Object.keys(ERR).find(k=>m.indexOf(k)>=0);throw{code:k||"other",status:r.status}}
- return j}
+ if(!r.ok){const m=(j&&(j.message||""))+"";const k=Object.keys(ERR).find(k=>m.indexOf(k)>=0);if(k=="bad_token"||k=="revoked"||k=="expired")cpurge();throw{code:k||"other",status:r.status}}
+ cput(fn,body,j);if(CF[fn])offOff();return j}
 function fail(e){return e&&ERR[e.code]?ERR[e.code]:e&&e.code=="net"?"تعذّر الاتصال بالإنترنت. تأكد من الشبكة ثم أعد المحاولة.":"حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً."}
 function showErr(m,retry){$("#main").innerHTML='<div class="err">'+esc(m)+'</div>'+(retry?'<div class="ctr"><button class="btn" id="rt">إعادة المحاولة</button></div>':"");if(retry)$("#rt").onclick=retry}
 
@@ -216,6 +226,7 @@ function drawNotes(){
 
 async function init(){
  if(!TOKEN||TOKEN.length<16){showErr("افتح الرابط الخاص بك كما أرسله لك معلم الحلقة.");return}
+ try{const o=localStorage.getItem("hq_tok");if(o&&o!==TOKEN)cpurge()}catch(e){}
  try{const j=await rpc("parent_login",{p_token:TOKEN});
   try{localStorage.setItem("hq_tok",TOKEN)}catch(e){}
   ST.parent=j.parent;ST.kids=j.children||[];
@@ -341,5 +352,7 @@ document.addEventListener("click",async ev=>{
    addMine({kind:"comment",day_date:d,comment:v});toast("تم إرسال تعليقك");draw()}
   catch(e){b.disabled=false;toast(fail(e))}}
 });
+addEventListener("online",()=>{if(OFFT||!ST.kids.length)init()});
+setInterval(()=>{if(navigator.onLine!==false&&(OFFT||!ST.kids.length)&&!ST.busy)init()},60000);
 init();
 </script></body></html>
