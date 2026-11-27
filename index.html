@@ -828,7 +828,9 @@ const DEF_TPL=()=>({
  ws:["> *الطالب  ||  {الطالب}*","","{الأيام}","",T("wSum")+"{مجموع_التسميع}",T("sepA"),""].join("\n"),
  wd:["• {اليوم} 》 {نص_اليوم}",T("sepB")].join("\n"),
  wf:""});
-const TP=k=>(S.tpl&&S.tpl[k]!=null)?S.tpl[k]:DEF_TPL()[k];
+const TBLANKDEF={wh:1,ws:1,wd:1};/* a saved weekly template that is empty/whitespace would hide the days or the header: use the default instead (stored value is not touched) */
+const tplOn=k=>!!(S.tpl&&S.tpl[k]!=null&&!(TBLANKDEF[k]&&!String(S.tpl[k]).trim()));
+const TP=k=>tplOn(k)?S.tpl[k]:DEF_TPL()[k];
 const TOPT={"الاختبار_القادم":1,"الهدف":1,"الطلاب":1,"الأيام":1};
 /* replace {var}; a line whose optional variable is empty is dropped (e.g. no exam, no goal); unknown {names} stay as typed */
 function tfill(t,V){return String(t).split("\n").map(line=>{let drop=false;const out=line.replace(/\{([^{}\n]+)\}/g,(m,k)=>{k=k.trim();if(!Object.prototype.hasOwnProperty.call(V,k))return m;const v=V[k];if((v===""||v==null)&&TOPT[k])drop=true;return v==null?"":v});return drop?null:out}).filter(l=>l!==null).join("\n")}
@@ -1205,7 +1207,7 @@ A.swDl=()=>saveBlob(new Blob([SWSRC],{type:"text/javascript"}),"sw.js");
 
 /* ================= Settings: text templates ================= */
 function tplWarn(k,v){const ok=new Set(TVARS[k]);["يوم","الفاصل_الأيام","الفاصل_الرئيسي","التذييل"].forEach(x=>ok.add(x));const bad=[];String(v).replace(/\{([^{}\n]+)\}/g,(m,x)=>{x=x.trim();if(!ok.has(x)&&bad.indexOf(x)<0)bad.push(x)});return bad.length?"⚠️ متغيرات غير معروفة (ستظهر كما هي): "+bad.map(x=>"{"+x+"}").join(" "):""}
-function tplCard(){const col=k=>{const v=TP(k),cu=S.tpl&&S.tpl[k]!=null;return'<div style="margin-top:12px"><div class="flex" style="justify-content:space-between;flex-wrap:nowrap"><label style="margin:0" for="tp_'+k+'"><b>'+TNAME[k]+'</b>'+(cu?' <span class="badge">معدّل</span>':"")+'</label><button type="button" class="btn s" style="min-height:40px" data-a="tplRst" data-k="'+k+'">↺ استرجاع الافتراضي</button></div><textarea id="tp_'+k+'" class="tpl-t" data-c="tpl" data-on="input" data-k="'+k+'" spellcheck="false">'+esc(v)+'</textarea><div class="mu" style="margin:2px 0">اضغط متغيراً لإدراجه:</div><div>'+TVARS[k].map(x=>'<button type="button" class="vch" data-a="tvar" data-k="'+k+'" data-v="'+esc(x)+'">{'+esc(x)+'}</button>').join("")+'</div><div class="mu" id="tw_'+k+'" style="color:var(--rd)">'+esc(tplWarn(k,v))+"</div></div>"};
+function tplCard(){const col=k=>{const v=TP(k),cu=tplOn(k);return'<div style="margin-top:12px"><div class="flex" style="justify-content:space-between;flex-wrap:nowrap"><label style="margin:0" for="tp_'+k+'"><b>'+TNAME[k]+'</b>'+(cu?' <span class="badge">معدّل</span>':"")+'</label><button type="button" class="btn s" style="min-height:40px" data-a="tplRst" data-k="'+k+'">↺ استرجاع الافتراضي</button></div><textarea id="tp_'+k+'" class="tpl-t" data-c="tpl" data-on="input" data-k="'+k+'" spellcheck="false">'+esc(v)+'</textarea><div class="mu" style="margin:2px 0">اضغط متغيراً لإدراجه:</div><div>'+TVARS[k].map(x=>'<button type="button" class="vch" data-a="tvar" data-k="'+k+'" data-v="'+esc(x)+'">{'+esc(x)+'}</button>').join("")+'</div><div class="mu" id="tw_'+k+'" style="color:var(--rd)">'+esc(tplWarn(k,v))+"</div></div>"};
  return'<div class="mu">عدّل شكل نص الواتساب الأسبوعي. اكتب المتغيرات بين أقواس مثل {الطالب}. السطر الذي يحتوي {الهدف} يُحذف تلقائياً عندما يكون فارغاً. الافتراضي يعطي النص الحالي حرفياً.</div>'+["wh","ws","wd","wf"].map(col).join("")+
  '<button type="button" class="btn s w" style="margin-top:10px" data-a="tplRstAll">↺ استرجاع كل القوالب الافتراضية</button><label>معاينة التقرير الأسبوعي (ببيانات الأسبوع المفتوح)</label><div class="text-out" id="tprevW" dir="rtl">'+esc(S.students.length?wText():"أضف طلاباً لترى المعاينة")+"</div>"}
 function tplPrev(){const a=$("#tprevD"),b=$("#tprevW");if(S.students.length){if(a)a.textContent=dText();if(b)b.textContent=wText()}}
