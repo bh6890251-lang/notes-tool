@@ -797,24 +797,64 @@ function pcMsg(s){const D=pcData(s),w=D.w,p=D.p;
  if(D.sc!=null)L.push("⭐ التقييم: "+D.sc+"/10");
  L.push(p.g>0?"🎯 الخطة ("+GTN[p.type]+"): "+p.t+" - "+pgf(p.ac)+" من "+pgf(p.g)+" ("+p.pct+"%)":"🎯 الخطة: "+p.t);
  L.push("","للرد السريع أرسلوا رقماً فقط:");PCREP.forEach(r=>L.push(r[0]+" - "+r[1]));L.push("","جزاكم الله خيراً، ونسأل الله أن يبارك في أبنائكم.");return L.join("\n")}
-async function pcCanvas(s){await loadFonts();const D=pcData(s),p=D.p,w=D.w,W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");x.direction="rtl";x.textBaseline="middle";x.textAlign="center";
- const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0f4d35");g.addColorStop(1,"#1f6b4a");x.fillStyle=g;x.fillRect(0,0,W,H);
- x.strokeStyle="rgba(217,162,27,.9)";x.lineWidth=6;x.strokeRect(24,24,W-48,H-48);x.lineWidth=2;x.strokeRect(40,40,W-80,H-80);
- const lg=await ldImg(logoSrc());if(lg){const lh=110,lw=lg.naturalWidth/lg.naturalHeight*lh;x.fillStyle="#fff";rrect(x,W/2-lw/2-10,66,lw+20,lh+20,24);x.fill();x.drawImage(lg,W/2-lw/2,76,lw,lh)}
- x.fillStyle="#cfe6d8";x.font="400 32px "+CF;x.fillText(S.hl||"",W/2,250);
- x.fillStyle="#f6dd8f";x.font="700 78px "+CQ;x.fillText(D.n,W/2,340);
- x.fillStyle="#cfe6d8";x.font="400 30px "+CF;x.fillText("الأسبوع: "+dlab(D.a)+" – "+dlab(D.b),W/2,412);
- const col=p.k=="done"?"#2e9e5b":p.k=="on"?"#d9a21b":p.k=="late"?"#c0463a":"#7b8a82";
- x.fillStyle="rgba(255,255,255,.12)";rrect(x,70,460,W-140,300,28);x.fill();
- x.fillStyle="#f6dd8f";x.font="700 40px "+CF;x.fillText("حالة الخطة الأسبوعية",W/2,505);
- x.fillStyle=col;rrect(x,W/2-210,540,420,86,43);x.fill();x.fillStyle="#fff";x.font="700 46px "+CF;x.fillText((p.k=="done"?"✅ ":p.k=="late"?"⏳ ":p.k=="on"?"👍 ":"")+p.t.replace("لا توجد خطة محددة لهذا الأسبوع","لا خطة محددة"),W/2,584);
- if(p.g>0){x.fillStyle="rgba(255,255,255,.22)";rrect(x,120,664,W-240,34,17);x.fill();const bw=Math.max(34,(W-240)*p.pct/100);x.fillStyle=col;rrect(x,W-120-bw,664,bw,34,17);x.fill();
-  x.fillStyle="#fff";x.font="400 32px "+CF;x.fillText(pgf(p.ac)+" من "+pgf(p.g)+" ("+p.pct+"%) · "+GTN[p.type],W/2,730)}
- const tile=(cx,y,t,v)=>{x.fillStyle="rgba(255,255,255,.12)";rrect(x,cx-215,y,430,150,26);x.fill();x.fillStyle="#cfe6d8";x.font="400 30px "+CF;x.fillText(t,cx,y+42);x.fillStyle="#fff";x.font="700 50px "+CF;x.fillText(v,cx,y+104)};
- tile(W/2+235,800,"حفظ جديد",pgf(w.h));tile(W/2-235,800,"مراجعة",pgf(w.r));
- tile(W/2+235,975,"الحضور",w.cd?w.pr+" من "+w.cd+" أيام":"—");tile(W/2-235,975,"التقييم",D.sc==null?"—":D.sc+"/10");
- x.fillStyle="#cfe6d8";x.font="400 28px "+CF;x.fillText("للرد على الرسالة: 1 سيتأخر · 2 غائب بعذر · 3 أريد التحدث",W/2,1210);
- x.fillStyle="#f6dd8f";x.font="400 28px "+CF;x.fillText("بارك الله في أبنائكم",W/2,1262);return c}
+/* card drawing: two designs, "light" and "dark". Icons are drawn as shapes (no emoji, so nothing renders as a box). */
+const PCIC={
+ book:(x,s)=>{x.beginPath();x.moveTo(0,-s*.45);x.quadraticCurveTo(-s*.5,-s*.8,-s,-s*.55);x.lineTo(-s,s*.5);x.quadraticCurveTo(-s*.5,s*.25,0,s*.7);x.quadraticCurveTo(s*.5,s*.25,s,s*.5);x.lineTo(s,-s*.55);x.quadraticCurveTo(s*.5,-s*.8,0,-s*.45);x.moveTo(0,-s*.45);x.lineTo(0,s*.7);x.stroke()},
+ loop:(x,s)=>{const a0=.5,a1=Math.PI*1.75;x.beginPath();x.arc(0,0,s*.8,a0,a1);x.stroke();const px=Math.cos(a1)*s*.8,py=Math.sin(a1)*s*.8;x.beginPath();x.moveTo(px-s*.55,py-s*.1);x.lineTo(px+s*.05,py+s*.05);x.lineTo(px+s*.1,py-s*.6);x.stroke()},
+ cal:(x,s)=>{rrect(x,-s,-s*.8,s*2,s*1.7,s*.3);x.stroke();x.beginPath();x.moveTo(-s,-s*.2);x.lineTo(s,-s*.2);x.moveTo(-s*.45,-s*1.1);x.lineTo(-s*.45,-s*.55);x.moveTo(s*.45,-s*1.1);x.lineTo(s*.45,-s*.55);x.moveTo(-s*.4,s*.3);x.lineTo(-s*.1,s*.6);x.lineTo(s*.5,s*.05);x.stroke()},
+ star:(x,s)=>{x.beginPath();for(let i=0;i<10;i++){const r=i%2?s*.45:s,a=-Math.PI/2+i*Math.PI/5;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.stroke()},
+ check:(x,s)=>{x.beginPath();x.moveTo(-s*.7,0);x.lineTo(-s*.15,s*.55);x.lineTo(s*.75,-s*.5);x.stroke()},
+ clock:(x,s)=>{x.beginPath();x.arc(0,0,s,0,Math.PI*2);x.moveTo(0,-s*.55);x.lineTo(0,0);x.lineTo(s*.45,s*.3);x.stroke()},
+ trend:(x,s)=>{x.beginPath();x.moveTo(-s,s*.55);x.lineTo(-s*.25,-s*.1);x.lineTo(s*.2,s*.3);x.lineTo(s*.95,-s*.55);x.moveTo(s*.35,-s*.6);x.lineTo(s*.95,-s*.55);x.lineTo(s*.9,s*.05);x.stroke()},
+ dash:(x,s)=>{x.beginPath();x.moveTo(-s*.7,0);x.lineTo(s*.7,0);x.stroke()}};
+function pcIc(x,n,cx,cy,s,col,lw){x.save();x.translate(cx,cy);x.strokeStyle=col;x.lineWidth=lw||5;x.lineCap="round";x.lineJoin="round";PCIC[n](x,s);x.restore()}
+function pcRing(x,cx,cy,r,lw,pct,col,track,glow){x.save();x.lineCap="round";x.lineWidth=lw;x.strokeStyle=track;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.stroke();
+ if(pct>0){if(glow){x.shadowColor=glow;x.shadowBlur=26}x.strokeStyle=col;x.beginPath();x.arc(cx,cy,r,-Math.PI/2,-Math.PI/2-Math.PI*2*Math.min(100,pct)/100,true);x.stroke()}x.restore()}
+async function pcCanvas(s,v){await loadFonts();v=v||ui.pcStyle||"light";const D=pcData(s),p=D.p,w=D.w,W=1080,H=1500,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");x.direction="rtl";x.textBaseline="middle";
+ const L=v!=="dark",lg=await ldImg(logoSrc());
+ const T=(t,xx,y,f,col,al)=>{x.font=f;x.fillStyle=col;x.textAlign=al||"right";x.fillText(t,xx,y)};
+ const SC=p.k=="done"?"#1f9d57":p.k=="on"?"#d9a21b":p.k=="late"?"#d2503f":"#8a958f";
+ const ic=p.k=="done"?"check":p.k=="on"?"trend":p.k=="late"?"clock":"dash";
+ const stText=p.k=="none"?"لا خطة محددة":p.t;
+ const tiles=[["book","حفظ جديد",pgf(w.h)],["loop","مراجعة",pgf(w.r)],["cal","الحضور",w.cd?w.pr+" من "+w.cd+" أيام":"—"],["star","التقييم",D.sc==null?"—":D.sc+"/10"]];
+ const wk="الأسبوع: "+dlab(D.a)+" – "+dlab(D.b);
+ const chipsRow=(y,fill,stroke,numBg,numCol,txtCol)=>{let xr=W-70;[["1","سيتأخر"],["2","غائب بعذر"],["3","أريد التحدث"]].forEach(r=>{x.fillStyle=fill;rrect(x,xr-300,y,300,66,33);x.fill();if(stroke){x.strokeStyle=stroke;x.lineWidth=2;rrect(x,xr-300,y,300,66,33);x.stroke()}x.fillStyle=numBg;x.beginPath();x.arc(xr-33,y+33,24,0,Math.PI*2);x.fill();T(r[0],xr-33,y+35,"700 28px "+CF,numCol,"center");T(r[1],xr-70,y+34,"600 25px "+CF,txtCol,"right");xr-=320})};
+ if(L){
+  x.fillStyle="#f3efe4";x.fillRect(0,0,W,H);
+  const g=x.createLinearGradient(0,0,W,300);g.addColorStop(0,"#0f4d35");g.addColorStop(1,"#1f6b4a");x.fillStyle=g;x.fillRect(0,0,W,300);
+  x.save();x.globalAlpha=.07;x.fillStyle="#fff";[[120,60,150],[260,250,90],[960,40,110],[800,230,70]].forEach(a=>{x.beginPath();x.arc(a[0],a[1],a[2],0,Math.PI*2);x.fill()});x.restore();
+  if(lg){const lh=104,lw=lg.naturalWidth/lg.naturalHeight*lh;x.fillStyle="#fff";rrect(x,W-70-lw-20,60,lw+20,lh+20,26);x.fill();x.drawImage(lg,W-70-lw-10,70,lw,lh);}
+  T(S.hl||"",W-70-(lg?lg.naturalWidth/lg.naturalHeight*104+20:0)-26,100,"700 40px "+CF,"#fff");T("التقرير الأسبوعي",W-70-(lg?lg.naturalWidth/lg.naturalHeight*104+20:0)-26,152,"400 30px "+CF,"#f6dd8f");
+  x.save();x.shadowColor="rgba(15,77,53,.18)";x.shadowBlur=30;x.shadowOffsetY=10;x.fillStyle="#fff";rrect(x,70,225,W-140,260,36);x.fill();rrect(x,70,520,W-140,380,36);x.fill();x.restore();
+  T(D.n,W-120,330,"700 104px "+CQ,"#12402c");T(wk,W-120,430,"400 30px "+CF,"#6b7a71");
+  x.fillStyle="#d9a21b";rrect(x,W-120-90,386,90,6,3);x.fill();
+  T("حالة الخطة الأسبوعية",W-120,580,"700 34px "+CF,"#12402c");
+  x.font="700 46px "+CF;const pw=Math.min(560,x.measureText(stText).width+150);x.fillStyle=SC;rrect(x,W-120-pw,616,pw,92,46);x.fill();pcIc(x,ic,W-120-52,662,22,"#fff",7);T(stText,W-120-100,664,"700 46px "+CF,"#fff");
+  if(p.g>0){T(pgf(p.ac)+" من "+pgf(p.g),W-120,770,"700 40px "+CF,"#12402c");T(GTN[p.type],W-120,822,"400 30px "+CF,"#6b7a71")}else T("حدّد هدفاً أسبوعياً من ملف الطالب",W-120,780,"400 28px "+CF,"#6b7a71");
+  pcRing(x,300,710,120,32,p.g>0?p.pct:0,SC,"#e8e3d3");T(p.g>0?p.pct+"%":"—",300,704,"700 64px "+CF,"#12402c","center");T(p.g>0?"من الخطة":"",300,758,"400 26px "+CF,"#6b7a71","center");
+  const tl=(xr,y,t)=>{x.save();x.shadowColor="rgba(15,77,53,.14)";x.shadowBlur=22;x.shadowOffsetY=8;x.fillStyle="#fff";rrect(x,xr-478,y,478,160,30);x.fill();x.restore();const col=["#1f6b4a","#2a7f9e","#7a5a0a","#d9a21b"][tiles.indexOf(t)];x.fillStyle=col;x.globalAlpha=.13;x.beginPath();x.arc(xr-62,y+80,42,0,Math.PI*2);x.fill();x.globalAlpha=1;pcIc(x,t[0],xr-62,y+80,20,col,5);T(t[1],xr-132,y+52,"400 29px "+CF,"#6b7a71");T(t[2],xr-132,y+108,"700 50px "+CF,"#12402c")};
+  tl(W-70,935,tiles[0]);tl(W-70-502,935,tiles[1]);tl(W-70,1115,tiles[2]);tl(W-70-502,1115,tiles[3]);
+  T("للرد على رسالة المعلم أرسلوا رقماً فقط",W-70,1318,"600 27px "+CF,"#6b7a71");chipsRow(1346,"#fff","#d8d2bf","#1f6b4a","#fff","#12402c");
+  T("بارك الله في أبنائكم",W/2,1452,"400 27px "+CF,"#7a5a0a","center");
+ }else{
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0a1a14");g.addColorStop(1,"#12301f");x.fillStyle=g;x.fillRect(0,0,W,H);
+  const gg=x.createLinearGradient(0,0,W,0);gg.addColorStop(0,"#b98a1b");gg.addColorStop(.5,"#f0cf7a");gg.addColorStop(1,"#b98a1b");
+  x.strokeStyle=gg;x.lineWidth=4;rrect(x,28,28,W-56,H-56,30);x.stroke();x.lineWidth=1.5;x.globalAlpha=.6;rrect(x,46,46,W-92,H-92,22);x.stroke();x.globalAlpha=1;
+  if(lg){const lh=96,lw=lg.naturalWidth/lg.naturalHeight*lh;x.fillStyle="#fff";rrect(x,W/2-lw/2-10,78,lw+20,lh+20,26);x.fill();x.drawImage(lg,W/2-lw/2,88,lw,lh)}
+  T(S.hl||"",W/2,232,"600 32px "+CF,"#d8c27a","center");
+  x.strokeStyle=gg;x.lineWidth=2;x.beginPath();x.moveTo(W/2-230,272);x.lineTo(W/2-22,272);x.moveTo(W/2+22,272);x.lineTo(W/2+230,272);x.stroke();x.fillStyle="#f0cf7a";x.save();x.translate(W/2,272);x.rotate(Math.PI/4);x.fillRect(-9,-9,18,18);x.restore();
+  T(D.n,W/2,368,"700 112px "+CQ,"#f6dd8f","center");T(wk,W/2,440,"400 30px "+CF,"#9fbfae","center");
+  const rc=p.g>0?SC:"#6f8378";pcRing(x,W/2,650,150,28,p.g>0?p.pct:0,p.k=="late"?"#e0705f":p.k=="done"?"#44c47d":"#f0cf7a","rgba(255,255,255,.09)",p.g>0?(p.k=="late"?"rgba(224,112,95,.55)":p.k=="done"?"rgba(68,196,125,.5)":"rgba(240,207,122,.5)"):null);
+  T(p.g>0?p.pct+"%":"—",W/2,640,"700 86px "+CF,"#fff","center");T(p.g>0?"من الخطة":"لا خطة",W/2,712,"400 28px "+CF,"#9fbfae","center");
+  x.font="700 44px "+CF;const pw=Math.min(620,x.measureText(stText).width+150);const px=W/2-pw/2;x.fillStyle=SC;x.globalAlpha=.2;rrect(x,px,836,pw,86,43);x.fill();x.globalAlpha=1;x.strokeStyle=SC;x.lineWidth=3;rrect(x,px,836,pw,86,43);x.stroke();pcIc(x,ic,px+pw-52,879,21,SC==="#8a958f"?"#cfd8d2":"#fff",7);T(stText,px+pw-92,881,"700 44px "+CF,"#fff","right");
+  T(p.g>0?pgf(p.ac)+" من "+pgf(p.g)+" · "+GTN[p.type]:"حدّد هدفاً أسبوعياً من ملف الطالب",W/2,968,"400 30px "+CF,"#cfe0d5","center");
+  const tl=(xr,y,t)=>{x.fillStyle="rgba(255,255,255,.05)";rrect(x,xr-460,y,460,140,28);x.fill();x.strokeStyle="rgba(217,162,27,.4)";x.lineWidth=2;rrect(x,xr-460,y,460,140,28);x.stroke();x.fillStyle="rgba(240,207,122,.12)";x.beginPath();x.arc(xr-58,y+70,40,0,Math.PI*2);x.fill();pcIc(x,t[0],xr-58,y+70,19,"#f0cf7a",5);T(t[1],xr-124,y+46,"400 27px "+CF,"#9fbfae");T(t[2],xr-124,y+96,"700 46px "+CF,"#fff")};
+  tl(W-80,995,tiles[0]);tl(W-80-480,995,tiles[1]);tl(W-80,1155,tiles[2]);tl(W-80-480,1155,tiles[3]);
+  T("للرد على رسالة المعلم أرسلوا رقماً فقط",W-70,1326,"600 26px "+CF,"#9fbfae");chipsRow(1346,"rgba(255,255,255,.04)","rgba(240,207,122,.55)","#f0cf7a","#0a1a14","#e8efe9");
+  T("بارك الله في أبنائكم",W/2,1438,"400 26px "+CF,"#d8c27a","center");
+ }
+ return c}
+
 function pcCard(s){const id=s.id,o=phGet(),pp=o.p[id]||[],D=pcData(s),p=D.p,op=!!(ui.pcOpen||{})[id],rp=(rpGet()[id]||{})[D.a];
  const col=p.k=="done"?"var(--ok)":p.k=="late"?"var(--rd)":p.k=="on"?"var(--au)":"var(--mu)";
  let h='<div class="card" id="pccard"><h3>📱 رسالة ولي الأمر</h3><div class="mu">بطاقة وواتساب لهذا الطالب فقط. الاسم الأول فقط، بدون أرقام أو ملاحظات داخلية.</div>';
@@ -825,8 +865,9 @@ function pcCard(s){const id=s.id,o=phGet(),pp=o.p[id]||[],D=pcData(s),p=D.p,op=!
  [0,1].forEach(i=>{const n=phWa(pp[i],o.cc);if(pp[i]||i==0)h+='<button type="button" class="btn au" data-a="pcWa" data-id="'+id+'" data-i="'+i+'"'+(n?"":" disabled")+'>💬 واتساب '+(pp[1]?(i?"ولي الأمر ٢":"ولي الأمر ١"):"ولي الأمر")+"</button>"});
  h+='<button type="button" class="btn s" data-a="pcCp" data-id="'+id+'">📋 نسخ الرسالة</button><button type="button" class="btn s" data-a="pcShow" data-id="'+id+'">'+(op?"إخفاء البطاقة":"🖼️ بطاقة الصورة")+"</button></div>";
  if(!phWa(pp[0],o.cc))h+='<div class="mu">اكتب رقماً صحيحاً لتفعيل زر واتساب (يُحفظ على هذا الجهاز فقط ولا يدخل النسخ الاحتياطي ولا يُنشر).</div>';
- if(op)h+='<div style="margin-top:10px;text-align:center"><canvas id="pcv" data-id="'+id+'" style="width:100%;max-width:360px;border-radius:14px;box-shadow:var(--sh)" aria-label="بطاقة الطالب"></canvas></div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="pcSh" data-id="'+id+'">📤 مشاركة الصورة</button><button type="button" class="btn s" data-a="pcDl" data-id="'+id+'">⬇️ حفظ الصورة</button></div><div class="mu">واتساب لا يرفق الصورة تلقائياً من الرابط. اضغط «مشاركة الصورة» واختر محادثة ولي الأمر، أو أرسل الرسالة النصية.</div>';
+ if(op)h+='<div class="flex" style="margin-top:10px;justify-content:center">'+[["light","فاتح"],["dark","داكن"]].map(r=>'<button type="button" class="chip'+((ui.pcStyle||"light")==r[0]?" on":"")+'" data-a="pcSty" data-v="'+r[0]+'">'+r[1]+"</button>").join("")+'</div><div style="margin-top:10px;text-align:center"><canvas id="pcv" data-id="'+id+'" style="width:100%;max-width:360px;border-radius:14px;box-shadow:var(--sh)" aria-label="بطاقة الطالب"></canvas></div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="pcSh" data-id="'+id+'">📤 مشاركة الصورة</button><button type="button" class="btn s" data-a="pcDl" data-id="'+id+'">⬇️ حفظ الصورة</button></div><div class="mu">واتساب لا يرفق الصورة تلقائياً من الرابط. اضغط «مشاركة الصورة» واختر محادثة ولي الأمر، أو أرسل الرسالة النصية.</div>';
  h+='<div style="margin-top:12px"><b>ردّ ولي الأمر بالرقم:</b> <span class="mu">سجّل ما وصلك (يُحفظ هنا فقط)</span><div class="flex" style="margin-top:6px">'+PCREP.map(r=>'<button type="button" class="chip'+(rp==r[0]?" on":"")+'" data-a="pcRep" data-id="'+id+'" data-v="'+r[0]+'">'+r[0]+" · "+r[1]+"</button>").join("")+"</div></div></div>";return h}
+A.pcSty=el=>{ui.pcStyle=el.dataset.v;render()};
 A.pcShow=el=>{ui.pcOpen=ui.pcOpen||{};ui.pcOpen[el.dataset.id]=!ui.pcOpen[el.dataset.id];render()};
 A.pcCp=el=>{const s=stu(el.dataset.id);if(s)copyText(pcMsg(s))};
 A.pcWa=el=>{const s=stu(el.dataset.id);if(!s)return;const o=phGet(),n=phWa((o.p[s.id]||[])[+el.dataset.i||0],o.cc);if(!n){toast("رقم غير صحيح");return}const t=pcMsg(s),w=window.open("https://wa.me/"+n+"?text="+encodeURIComponent(t),"_blank");if(!w)copyText(t)};
