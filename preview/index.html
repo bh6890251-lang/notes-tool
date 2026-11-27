@@ -1130,11 +1130,11 @@ const pubReady=c=>!!(pubUrl(c.url)&&c.key&&!pubKeyErr(c.key)&&c.pw);
 function pubSetCard(){const c=pubCfg(),ok=pubReady(c);
  const nm=c.name&&c.pw&&c.pw!==undefined;
  return'<div class="card"><b>☁️ نشر الأسبوع لأولياء الأمور</b>'+
- (nm?'<div style="margin:10px 0">✅ مسجّل باسم: <b>'+esc(c.name)+'</b></div><div class="mu">طلابك وأولياء أمرك ظاهرين لك فقط. لتسجيل الدخول على جهاز آخر اكتب نفس الاسم وكلمة السر.</div><div style="margin-top:8px"><button type="button" class="btn s" data-a="pubOut">تسجيل الخروج من هذا الجهاز</button></div>':
+ (nm?'<div style="margin:10px 0">✅ مسجّل باسم: <b>'+esc(c.name)+'</b></div><div class="mu">طلابك وأولياء أمرك ظاهرين لك فقط. لتسجيل الدخول على جهاز آخر اكتب نفس الاسم وكلمة السر.</div><div style="margin-top:8px"><button type="button" class="btn s" data-a="pubLogout">تسجيل الخروج من هذا الجهاز</button></div>':
  '<div class="mu">اكتب اسمك وكلمة سرك. أول مرة ينشأ حسابك، وبعدها بنفس الاسم وكلمة السر تدخل من أي جهاز. طلابك لا يراهم محفظ آخر.</div>'+
  '<label>الاسم</label><input id="pr_nm" autocomplete="username">'+
  '<label>كلمة السر (6 أحرف أو أكثر)</label><input id="pr_pw" type="password" dir="ltr" autocomplete="current-password">'+
- '<div style="margin-top:8px"><button type="button" class="btn" data-a="pubGo">دخول / إنشاء حساب</button> <button type="button" class="btn s" data-a="pubEye">👁</button></div>')+
+ '<div style="margin-top:8px"><button type="button" class="btn" data-a="pubEnter">دخول / إنشاء حساب</button> <button type="button" class="btn s" data-a="pubEye">👁</button></div>')+
  '<details style="margin-top:12px"><summary class="mu">إعدادات متقدمة</summary>'+
  '<label>رابط المشروع (Project URL)</label><input dir="ltr" inputmode="url" autocomplete="off" data-c="pubu" value="'+esc(c.url||"")+'">'+
  '<label>المفتاح العام (anon public key)</label><input dir="ltr" autocomplete="off" data-c="pubk" value="'+esc(c.key||"")+'"></details>'+
@@ -1154,8 +1154,8 @@ function pubNewPw(){const n1=($("#pr_n1")||{}).value||"",n2=($("#pr_n2")||{}).va
 A.pubReg=async()=>{const n1=pubNewPw();if(!n1)return;const code=(($("#pr_code")||{}).value||"")||pubCfg().pw||"";if(!code){toast("اكتب رمز الدعوة في خانته");return}
  if(!confirm("إنشاء حساب محفظ جديد بكلمة سر خاصة؟ طلابك سيُنشرون في حسابك أنت فقط. احفظ كلمة السر الجديدة جيداً."))return;
  try{await pubRaw("teacher_register",{p_code:code,p_new_secret:n1,p_name:($("#pr_nm")||{}).value||null});const c=pubCfg();c.pw=n1;pubSave(c);window.JOINCODE="";toast("تم إنشاء حسابك ✅ كلمة سر النشر صارت الجديدة",null,5000);render(true)}catch(e){toast(pubRegErr(e),null,6000)}};
-A.pubOut=()=>{if(!confirm("تسجيل الخروج من هذا الجهاز؟ بياناتك محفوظة ولا تُحذف."))return;const c=pubCfg();c.pw="";c.name="";pubSave(c);render(true)};
-A.pubGo=async()=>{const n=(($("#pr_nm")||{}).value||"").replace(/\s+/g," ").trim(),pw=(($("#pr_pw")||{}).value||"");if(n.length<2){toast("اكتب اسمك (حرفان على الأقل)");return}if(pw.length<6){toast("كلمة السر 6 أحرف على الأقل");return}
+A.pubLogout=()=>{if(!confirm("تسجيل الخروج من هذا الجهاز؟ بياناتك محفوظة ولا تُحذف."))return;const c=pubCfg();c.pw="";c.name="";pubSave(c);render(true)};
+A.pubEnter=async()=>{const n=(($("#pr_nm")||{}).value||"").replace(/\s+/g," ").trim(),pw=(($("#pr_pw")||{}).value||"");if(n.length<2){toast("اكتب اسمك (حرفان على الأقل)");return}if(pw.length<6){toast("كلمة السر 6 أحرف على الأقل");return}
  const S=n.toLowerCase()+"|"+pw;
  try{const r=await pubRaw("teacher_enter",{p_code:DEF_CODE,p_name:n,p_secret:S});const c=pubCfg();c.pw=S;c.name=r.name||n;pubSave(c);toast(r.mode=="created"?"تم إنشاء حسابك ✅":"تم تسجيل الدخول ✅",null,4000);render(true)}catch(e){const m=e&&e.message;toast(m=="login"?"كلمة السر غير صحيحة لهذا الاسم، أو الاسم مستخدم":m=="name"?"اكتب اسمك (حرفان على الأقل)":m=="weak"?"كلمة السر قصيرة":pubRegErr(e),null,6000)}};
 A.pubEye=()=>{document.querySelectorAll('[data-c="pubp"],#pr_code,#pr_n1,#pr_n2').forEach(e=>{e.type=e.type==="password"?"text":"password"})};
