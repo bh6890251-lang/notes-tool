@@ -1224,9 +1224,12 @@ function intCard(){const I=ui.int,c=pubCfg(),[a,b]=wrange();if(!pubReady(c))retu
 A.intRef=()=>intLoad();
 function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+pubCard()+intCard()+parCard()+pubSetCard()}
 function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
+/* top students of the week for the parent page: exactly what the honor board (لوحة الشرف) shows */
+function pubHonor(a){try{const d=dOf(a);d.setHours(12,0,0,0);const off=Math.round((d-wkStartOf(new Date()))/6048e5),H=honor(off);if(H.ks[0]!==a)return null;
+ return{hf:H.hf.map(r=>({n:String(r.n||""),h:+r.s.h||0})),cm:H.cm.map(r=>({n:String(r.n||""),rate:+r.s.rate||0,t:+r.s.t||0}))}}catch(e){return null}}
 function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
  const stm={"سمّع":"heard","لم يسمّع":"not_heard","لم يسمّع (معذور)":"excused","غائب":"absent","إجازة":"off"};
- return{week_start:a,week_end:b,students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
+ return{week_start:a,week_end:b,honor:pubHonor(a),students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
   const days=[];D.days.forEach((y,i)=>{if(y.none)return;const st=stm[y.st];if(!st)return;if(st=="heard")pr++;else if(st=="absent")ab++;else if(st=="excused")ex++;
    days.push({day_date:ks[i],status:st,items:y.it.filter(x=>!x.ex).map(x=>({name:x.nm,ay:x.ay||null,pages:x.pg||0,type:x.ty=="مراجعة"?"review":x.ty=="حفظ جديد"?"hifz":null})),note:y.nt||null})});
   return{app_id:String(s.id),first_name:String(s.name||"").trim().split(/\s+/)[0],group_name:s.grp||null,
@@ -1576,5 +1579,6 @@ async function corruptFlow(){let L=[];try{L=await snapList()}catch(e){}
 })();
 
 </script></body></html>
+
 
 
