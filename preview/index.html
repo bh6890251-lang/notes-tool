@@ -1226,7 +1226,8 @@ function vPortal(){if(!S.students.length)return'<div class="card empty">أضف �
 function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
 /* top students of the week for the parent page: exactly what the honor board (لوحة الشرف) shows */
 function pubHonor(a){try{const d=dOf(a);d.setHours(12,0,0,0);const off=Math.round((d-wkStartOf(new Date()))/6048e5),H=honor(off);if(H.ks[0]!==a)return null;
- return{hf:H.hf.map(r=>({n:String(r.n||""),h:+r.s.h||0})),cm:H.cm.map(r=>({n:String(r.n||""),rate:+r.s.rate||0,t:+r.s.t||0}))}}catch(e){return null}}
+ const top3=act().map(s=>({n:String(s.name||""),s:st(s.id,H.ks)})).filter(r=>r.s.t>0).map(r=>({n:r.n,h:+r.s.h||0,r:+r.s.r||0,t:+r.s.t||0,rate:+r.s.rate||0,p:Math.round((2*(+r.s.h||0)+(+r.s.r||0)+(+r.s.t||0))*10)/10})).sort((x,y)=>y.p-x.p||y.h-x.h||y.rate-x.rate).slice(0,3).map(r=>({n:r.n,h:r.h,r:r.r,t:r.t,p:r.p}));
+ return{hf:H.hf.map(r=>({n:String(r.n||""),h:+r.s.h||0})),cm:H.cm.map(r=>({n:String(r.n||""),rate:+r.s.rate||0,t:+r.s.t||0})),top3}}catch(e){return null}}
 function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
  const stm={"سمّع":"heard","لم يسمّع":"not_heard","لم يسمّع (معذور)":"excused","غائب":"absent","إجازة":"off"};
  return{week_start:a,week_end:b,honor:pubHonor(a),students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
