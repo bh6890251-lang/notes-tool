@@ -476,7 +476,7 @@ function lastPos(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort(
 function revSince(id,sur,date){let t=0;Object.keys(S.days||{}).filter(k=>k>=date&&k<=S.dt).forEach(k=>{const d=rd(k,id);if(!d||d.att!=0)return;ents(d).forEach((e,ix)=>{if(e.sur!=sur||e.hf!=2)return;const src=ix?d.x[ix-1]:d;if(src.na&&!src.pg)return;t+=e.pg?e.pg:ewt(e)})});return t}
 function pendRev(id){const L=lastPos(id,1);if(!L||!L.fin||!L.date)return null;const Tx=wsum(L.sur,1,AYC[L.sur]),run=revSince(id,L.sur,L.date);return(doneP(run,Tx)||(run>0&&Tx-run<0.5))?null:{sur:L.sur,run:qn(run),T:L.T}}
 function sugg(id,hf){if(hf==2){const Pp=pendRev(id);if(Pp)return{sur:Pp.sur,rem:Pp.T-Pp.run,post:1}}const L=lastPos(id,hf);if(!L)return null;if(!L.fin)return{sur:L.sur,rem:L.T-L.run};if(hf==1&&nextSur(L.sur,1)!=null){const Pp=pendRev(id);if(Pp)return{wait:1,sur:null,after:Pp.sur}}const t=nextSur(L.sur,hf);return t==null?{done:true}:{sur:t}}
-function sugAy(id){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==1&&e.sur>=0).pop();if(!l)continue;const Tt=AYC[l.sur],end=(+l.ta>0)?Math.min(+l.ta,Tt):Tt;if(end<Tt)return{sur:l.sur,hf:1,fa:end+1,from:k};const t=nextSur(l.sur,1);return t==null?null:{sur:t,hf:1,from:k,nx:1}}const sp=((S.sp||{})[id]||{})[1];if(sp&&sp.sur>=0&&sp.ay!=null&&+sp.ay>0){const Tt=AYC[sp.sur];if(+sp.ay<Tt)return{sur:sp.sur,hf:1,fa:Math.round(+sp.ay)+1,from:null};const t=nextSur(sp.sur,1);return t==null?null:{sur:t,hf:1,from:null,nx:1}}return null}
+function sugAy(id){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==1&&e.sur>=0&&!(e.na&&!e.pg)).pop();if(!l)continue;const Tt=AYC[l.sur],end=(+l.ta>0)?Math.min(+l.ta,Tt):Tt;if(end<Tt)return{sur:l.sur,hf:1,fa:end+1,from:k};const t=nextSur(l.sur,1);return t==null?null:{sur:t,hf:1,from:k,nx:1}}const sp=((S.sp||{})[id]||{})[1];if(sp&&sp.sur>=0&&sp.ay!=null&&+sp.ay>0){const Tt=AYC[sp.sur];if(+sp.ay<Tt)return{sur:sp.sur,hf:1,fa:Math.round(+sp.ay)+1,from:null};const t=nextSur(sp.sur,1);return t==null?null:{sur:t,hf:1,from:null,nx:1}}return null}
 function drOf(id){const d=rd(S.dt,id)||blank();if(!d||d.att!=0||d.sur>=0||d.hf||(d.x||[]).length||(d.t||[]).length)return null;return sugAy(id)}
 function cmDr(id){const g=drOf(id);if(!g)return false;const d=ED(id);d.sur=g.sur;d.hf=1;if(g.fa)d.fa=g.fa;d.pg=0;d.na=1;return true}
 function todayHas(id,hf){return ents(dget(id)).some(e=>e.hf==hf&&e.sur>=0)}
@@ -694,7 +694,7 @@ A.surPick=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)ret
   sel.slice(1).forEach(i=>{if(!ents(d).some(x=>x.sur===i)){(d.x=d.x||[]).push({sur:i,pg:surPg(i),hf:e.hf||1})}});
   sv();render()})};
 C.pg=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const v=el.value;e.pg=(v===""||!(+v>0))?0:Math.min(100,Math.round(+v*100)/100);if(e.pg)e.na=0;sv();render()};
-function setAy(el,k){const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e||e.sur<0)return;const Tt=AYC[e.sur];let v=el.value===""?0:Math.max(1,Math.min(Tt,Math.round(+el.value)||0));if(v)e[k]=v;else delete e[k];if(e.fa&&e.ta&&e.ta<e.fa){if(k=="fa")e.ta=e.fa;else e.fa=e.ta}e.pg=0;e.na=0;sv();render()}
+function setAy(el,k){const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e||e.sur<0)return;const Tt=AYC[e.sur];let v=el.value===""?0:Math.max(1,Math.min(Tt,Math.round(+el.value)||0));if(v)e[k]=v;else delete e[k];if(e.fa&&e.ta&&e.ta<e.fa){if(k=="fa")e.ta=e.fa;else e.fa=e.ta}e.pg=0;e.na=+e.ta>0?0:1;sv();render()}
 C.fa=el=>setAy(el,"fa");C.ta=el=>setAy(el,"ta");
 C.sc=el=>{const d=ED(el.dataset.id);d.sc=el.value===""?null:+el.value;if(d.sc==null)delete d.sc;sv();render()};
 C.nt=el=>{const d=ED(el.dataset.id);d.nt=el.value;sv()};
@@ -1538,9 +1538,10 @@ const AYWx=sur=>AYWf()[sur]||[];
 function endByPages(sur,start,pages){const w=AYWx(sur),Tt=AYC[sur];start=Math.max(1,Math.min(start,Tt));let acc=0,prev=0;for(let a=start;a<=Tt;a++){prev=acc;acc+=(w[a-1]||0);if(acc>=pages-1e-9)return(a>start&&Math.abs(prev-pages)<Math.abs(acc-pages))?a-1:a}return Tt}
 /* next "from ayah" for a surah = last recorded end + 1 (0 when none or the surah was finished) */
 function lastEnd(id,sur,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse(),Tt=AYC[sur];
- for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur===sur).pop();if(!l)continue;const end=(+l.ta>0)?Math.min(+l.ta,Tt):((+l.fa>0)?Tt:0);return end>0&&end<Tt?end+1:0}
+ for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur===sur&&!(e.na&&!e.pg)).pop();if(!l)continue;const end=(+l.ta>0)?Math.min(+l.ta,Tt):((+l.fa>0)?Tt:0);return end>0&&end<Tt?end+1:0}
  const sp=((S.sp||{})[id]||{})[hf];if(sp&&sp.sur===sur&&+sp.ay>0&&+sp.ay<Tt)return Math.round(+sp.ay)+1;return 0}
-function autoFa(id,e){const f=lastEnd(id,e.sur,1);if(f>1){e.fa=f;delete e.ta;e.pg=0;e.na=0}}
+/* a suggested start with no end ayah is NOT an amount: it stays na=1 (counts 0 pages) until the teacher gives the end ayah or pages */
+function autoFa(id,e){const f=lastEnd(id,e.sur,1);if(f>1){e.fa=f;delete e.ta;e.pg=0;e.na=1}}
 function lastAmt(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur>=0).pop();if(!l)continue;const p=l.pg?l.pg:epg(l);if(p>0)return p}return 0}
 /* plan = continue from the suggestion, same size as the student's last memorization entry (to the surah end when the rest is about that size) */
 function planFor(id){const d0=rd(S.dt,id)||blank();if(d0.att!=0||todayHas(id,1))return null;const g=sugAy(id);if(!g)return null;const Tt=AYC[g.sur],st=g.fa||1,amt=lastAmt(id,1),rest=wsum(g.sur,st,Tt);let ta=Tt;if(amt>0&&rest>amt+0.25)ta=endByPages(g.sur,st,amt);
