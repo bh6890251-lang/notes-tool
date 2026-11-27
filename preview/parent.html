@@ -80,6 +80,17 @@ header .bell{margin-inline-start:auto;position:relative;min-width:44px;min-heigh
 .hb{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bd)}
 .rank{width:28px;height:28px;border-radius:14px;color:#222;font-weight:800;text-align:center;line-height:28px;flex:none}
 .mgh{font-weight:700;margin:10px 0 2px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.g4 .stat{padding:8px 2px}.g4 .stat b{font-size:20px}.g4 .stat span{font-size:12px;display:block;line-height:1.3}
+.top3 .tp{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bd)}
+.top3 .tp:first-of-type{border-top:0}
+.top3 .md{font-size:30px;line-height:1;flex:none}
+.top3 .tn{flex:1;min-width:0}.top3 .tn b{display:block}.top3 .tn small{color:var(--mu);font-size:13px}
+.top3 .pt{flex:none;text-align:center;background:var(--gl);border-radius:12px;padding:4px 10px;color:var(--g);font-weight:800;line-height:1.2}
+.top3 .pt small{display:block;font-weight:400;font-size:11px;color:var(--mu)}
+.rule{background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:13px;color:var(--mu)}
+details.card>summary{font-weight:700;font-size:17px;cursor:pointer;min-height:32px;list-style-position:inside}
+.empty{text-align:center;padding:6px 0}
 
 </style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
 <script>
@@ -93,7 +104,7 @@ const MON=["يناير","فبراير","مارس","أبريل","مايو","يو�
 const DAY=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const DAYS=["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"];
 const TOKEN=(()=>{const m=/(?:^#|&)k=([^&]+)/.exec(location.hash);let t=m?decodeURIComponent(m[1]).trim():"";if(!t){try{t=localStorage.getItem("hq_tok")||""}catch(e){}}return t})();
-let ST={parent:"",kids:[],sid:null,week:null,reps:[],busy:false,err:"",view:"rep",notes:[],newIds:{},unseen:0,honor:null,push:"",canInstall:false};
+let ST={parent:"",kids:[],sid:null,week:null,reps:[],busy:false,err:"",view:"rep",notes:[],newIds:{},unseen:0,honor:null,weeks:[],push:"",canInstall:false};
 function pd(s){const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)}
 function fd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function dl(s){const d=pd(s);return nm(d.getDate())+" "+MON[d.getMonth()]}
@@ -174,17 +185,21 @@ async function init(){
   $("#sub").textContent="أهلاً "+ST.parent;
   swReg();
   if(!ST.kids.length){$("#main").innerHTML='<div class="card">لا يوجد أبناء مرتبطون بهذا الرابط بعد. تواصل مع معلم الحلقة.</div>';return}
-  ST.sid=ST.kids[0].student_id;ST.week=lastWeek();
+  ST.sid=ST.kids[0].student_id;ST.week=curWeek();loadWeeks();
   loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()});
   await load()}
  catch(e){showErr(fail(e),e.code=="net"||e.code=="other"?init:null)}}
+async function loadWeeks(){try{const j=await rpc("parent_weeks",{p_token:TOKEN});ST.weeks=(j.weeks||[]).map(String);if(ST.kids.length)draw()}catch(e){}}
+function wlist(){const s={};(ST.weeks||[]).forEach(w=>s[w]=1);s[curWeek()]=1;s[ST.week]=1;return Object.keys(s).sort()}
+function prevW(){const l=wlist().filter(w=>w<ST.week);return l.length?l[l.length-1]:null}
+function nextW(){const l=wlist().filter(w=>w>ST.week);return l.length?l[0]:null}
 async function load(){
  ST.busy=true;draw();
  try{const j=await rpc("parent_weekly",{p_token:TOKEN,p_week_start:ST.week});
   ST.reps=(j.reports||[]);ST.err="";
   const r=ST.reps.find(x=>x.student_id==ST.sid);
   ST.honor=null;
-  if(r){await loadMine();try{const h=await rpc("parent_honor",{p_token:TOKEN,p_week_start:ST.week});ST.honor=h.honor||null}catch(e){}}
+  if(r)await loadMine();try{const h=await rpc("parent_honor",{p_token:TOKEN,p_week_start:ST.week});ST.honor=h.honor||null}catch(e){}
   ST.busy=false;
   if(r)rpc("parent_record_view",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week}).catch(()=>{})}
  catch(e){ST.busy=false;ST.reps=[];ST.err=fail(e)}
@@ -207,9 +222,14 @@ function honorCard(){
  const H=ST.honor;if(!H||((H.hifz||[]).length+(H.commit||[]).length)==0)return"";
  const col=["#d9a21b","#9aa5a8","#b87333","#ddd","#ddd"];
  const lst=(L,f)=>L.map((r,i)=>'<div class="hb"><span class="rank" style="background:'+col[i]+'">'+nm(i+1)+'</span><b style="flex:1">'+esc(r.n)+'</b><small class="mu">'+f(r)+'</small></div>').join("");
- return'<div class="card"><h3>🏆 لوحة الشرف</h3>'+
+ return'<details class="card"><summary>🏆 لوحة الشرف</summary>'+
  ((H.hifz||[]).length?'<div class="mgh">🥇 الأكثر حفظاً</div>'+lst(H.hifz,r=>esc(pgf(r.h))):"")+
- ((H.commit||[]).length?'<div class="mgh">🌟 الأكثر التزاماً</div>'+lst(H.commit,r=>nm(Math.round(r.rate))+"٪ حضور · "+nm(r.t)+" أيام تسميع"):"")+'</div>'}
+ ((H.commit||[]).length?'<div class="mgh">🌟 الأكثر التزاماً</div>'+lst(H.commit,r=>nm(Math.round(r.rate))+"٪ حضور · "+nm(r.t)+" أيام تسميع"):"")+'</details>'}
+function top3Card(){
+ const T=(ST.honor&&ST.honor.top3)||[];if(!T.length)return"";
+ const md=["🥇","🥈","🥉"];
+ return'<div class="card top3"><h3>⭐ أفضل ٣ طلاب هذا الأسبوع</h3>'+T.map((r,i)=>'<div class="tp"><span class="md">'+md[i]+'</span><div class="tn"><b>'+esc(r.n)+'</b><small>📖 حفظ '+esc(pgf(r.h))+' · 🔁 مراجعة '+esc(pgf(r.r))+' · ✅ '+nm(r.t)+' أيام تسميع</small></div><div class="pt">'+nm(r.p)+'<small>نقطة</small></div></div>').join("")+
+ '<div class="rule">طريقة الترتيب: كل صفحة حفظ جديد = ٢ نقطة، وكل صفحة مراجعة = نقطة، وكل يوم تسميع = نقطة. عند التساوي يُقدَّم الأعلى حفظاً ثم الأكثر التزاماً بالحضور. يشمل جميع طلاب الحلقة.</div></div>'}
 function dayCard(d){
  const s=STT[d.status]||[d.status,"neu","📌"],its=(d.items||[]);
  let hp=0,rp=0;its.forEach(i=>{const p=+i.pages||0;if(i.type=="review")rp+=p;else hp+=p});
@@ -228,27 +248,28 @@ function draw(){
  let h=pushCard();
  if(ST.kids.length>1)h+='<div class="chips">'+ST.kids.map(k=>'<button class="chip'+(k.student_id==ST.sid?" on":"")+'" data-a="kid" data-id="'+esc(k.student_id)+'">'+esc(k.first_name)+'</button>').join("")+'</div>';
  const kid=ST.kids.find(k=>k.student_id==ST.sid)||{};
- const we=shift(ST.week,5),canNext=ST.week<curWeek();
- h+='<div class="nav"><button class="btn s" data-a="prev" aria-label="الأسبوع السابق">‹ السابق</button><div class="mid">'+(ST.week==lastWeek()?"الأسبوع الماضي":ST.week==curWeek()?"هذا الأسبوع":"أسبوع")+'<small>'+dl(ST.week)+" – "+dl(we)+'</small></div><button class="btn s" data-a="next"'+(canNext?"":" disabled")+' aria-label="الأسبوع التالي">التالي ›</button></div>';
+ const we=shift(ST.week,5),pw=prevW(),nw=nextW();
+ h+='<div class="nav"><button class="btn s" data-a="prev"'+(pw?"":" disabled")+' aria-label="الأسبوع السابق">‹ السابق</button><div class="mid">'+(ST.week==curWeek()?"هذا الأسبوع":ST.week==lastWeek()?"الأسبوع الماضي":"أسبوع")+'<small>'+dl(ST.week)+" – "+dl(we)+'</small></div><button class="btn s" data-a="next"'+(nw?"":" disabled")+' aria-label="الأسبوع التالي">التالي ›</button></div>';
  if(ST.busy){M.innerHTML=h+'<div class="ctr mu">جاري التحميل...</div>';return}
  if(ST.err){M.innerHTML=h+'<div class="err">'+esc(ST.err)+'</div><div class="ctr"><button class="btn" data-a="retry">إعادة المحاولة</button></div>';return}
  const r=(ST.reps||[]).find(x=>x.student_id==ST.sid);
- if(!r){M.innerHTML=h+'<div class="card"><h3>'+esc(kid.first_name||"")+'</h3><div class="mu">لا يوجد تقرير منشور لهذا الأسبوع بعد.</div></div>';return}
+ if(!r){M.innerHTML=h+'<div class="card empty"><h3>'+esc(kid.first_name||"")+'</h3><div class="mu">لا يوجد تقرير منشور لهذا الأسبوع بعد.'+(pw?' يمكنك الرجوع لأسبوع سابق بزر «السابق».':"")+'</div></div>'+top3Card();return}
  const g=r.goal_pages,a=r.achieved_pages,pct=g>0&&a!=null?Math.min(100,Math.round(a/g*100)):null;
  h+='<div class="card"><h3>'+esc(r.first_name)+'</h3><div class="mu">'+esc([r.center_name,r.halaqa_name].filter(Boolean).join(" · "))+'</div>';
  if(g>0)h+='<div style="margin-top:8px"><b>الخطة: '+nm(g)+' صفحة'+(r.goal_type?" ("+(r.goal_type=="hifz"?"حفظ":r.goal_type=="review"?"مراجعة":esc(r.goal_type))+")":"")+'</b> · <b>المنجز: '+nm(a==null?0:a)+'</b>'+(pct!=null?' ('+nm(pct)+'٪)':"")+'<div class="bar"><i style="width:'+(pct||0)+'%"></i></div></div>';
- h+='<div class="grid" style="margin-top:8px"><div class="stat"><b>'+nm(r.hifz_pages||0)+'</b><span>📖 صفحات الحفظ</span></div><div class="stat"><b>'+nm(r.review_pages||0)+'</b><span>🔁 صفحات المراجعة</span></div><div class="stat"><b>'+nm(r.present_days||0)+'</b><span>✅ أيام الحضور</span></div><div class="stat"><b>'+nm((r.absent_days||0)+(r.excused_days||0))+'</b><span>❌ غياب ('+nm(r.excused_days||0)+' بعذر)</span></div></div>';
+ h+='<div class="g4"><div class="stat"><b>'+nm(r.hifz_pages||0)+'</b><span>📖 حفظ</span></div><div class="stat"><b>'+nm(r.review_pages||0)+'</b><span>🔁 مراجعة</span></div><div class="stat"><b>'+nm(r.present_days||0)+'</b><span>✅ حضور</span></div><div class="stat"><b>'+nm((r.absent_days||0)+(r.excused_days||0))+'</b><span>❌ غياب'+((r.excused_days||0)>0?' ('+nm(r.excused_days)+' بعذر)':"")+'</span></div></div>';
  const ds=r.days||[];
  if(ds.length)h+='<div class="wk">'+ds.map(d=>{const s=STT[d.status]||["","neu","📌"];return'<div><i>'+s[2]+'</i>'+DAYS[pd(d.day_date).getDay()]+'</div>'}).join("")+'</div>';
  if(r.rating!=null)h+='<div style="margin-top:8px">⭐ التقييم: <b>'+nm(r.rating)+' / ١٠</b></div>';
  if(r.upcoming_exam)h+='<div style="margin-top:6px">📝 الاختبار القادم: <b>'+esc(r.upcoming_exam)+'</b></div>';
  if(r.teacher_note)h+='<div class="note">'+esc(r.teacher_note)+'</div>';
  h+=reactBox("")+'</div>';
- h+=honorCard();
+ h+=top3Card();
  h+='<div class="card"><h3>📅 التسميع اليومي</h3>';
  if(!ds.length)h+='<div class="mu">لا توجد أيام مسجلة.</div>';
  ds.forEach(d=>{h+=dayCard(d)});
  h+='</div>';
+ h+=honorCard();
  M.innerHTML=h}
 document.addEventListener("click",async ev=>{
  const b=ev.target.closest("[data-a]");if(!b||b.disabled)return;const a=b.dataset.a;
@@ -258,8 +279,8 @@ document.addEventListener("click",async ev=>{
  else if(a=="enable"){enablePush()}
  else if(a=="install"){if(deferredInstall){deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;ST.canInstall=false;draw()}}
  else if(a=="kid"){ST.sid=b.dataset.id;draw();load()}
- else if(a=="prev"){ST.week=shift(ST.week,-7);load()}
- else if(a=="next"){ST.week=shift(ST.week,7);load()}
+ else if(a=="prev"){const w=prevW();if(w){ST.week=w;load()}}
+ else if(a=="next"){const w=nextW();if(w){ST.week=w;load()}}
  else if(a=="retry"){load()}
  else if(a=="heart"){const d=b.dataset.d||null;b.disabled=true;
   try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"mashallah",p_comment:null});addMine({kind:"mashallah",day_date:d,comment:null});toast("وصلت ما شاء الله للمعلم ❤️");draw()}
