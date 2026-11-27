@@ -360,23 +360,16 @@ function tabsBar(){const n=(ST.al&&ST.al.items?ST.al.items.filter(x=>ST.kids.som
  const T=[["wk","الأسبوع"],["mo","الشهر"],["gen","الحلقة"],["fu","المتابعة"]];
  return'<div class="tabs" role="tablist">'+T.map(t=>'<button class="tab'+(ST.tab==t[0]?" on":"")+'" role="tab" aria-selected="'+(ST.tab==t[0])+'" data-a="tab" data-t="'+t[0]+'">'+t[1]+(t[0]=="fu"&&n>0?'<i class="tdot"></i>':"")+'</button>').join("")+'</div>'}
 function sum(a,f){return a.reduce((s,x)=>s+(+f(x)||0),0)}
-function moStats(D){const ds=D.days||[];let hp=0,rp=0,pr=0,ab=0,ex=0;
- ds.forEach(d=>{hp+=+d.hifz||0;rp+=+d.review||0;if(d.status=="heard")pr++;else if(d.status=="absent")ab++;else if(d.status=="excused"||d.status=="not_heard")ex++});
+function moStats(D){const T=D.totals||{};const hp=+T.hifz||0,rp=+T.review||0,pr=+T.present||0,ab=+T.absent||0,ex=+T.excused||0;
  const tot=pr+ab+ex,att=tot>0?Math.round(pr/tot*100):null,g=+D.goal_pages||0,a=+D.achieved_pages||0,pct=g>0?Math.round(a/g*100):null;
  const rt=(D.ratings||[]).map(Number).filter(x=>x>=0),rate=rt.length?Math.round(sum(rt,x=>x)/rt.length*10)/10:null;
  let juz=Array.isArray(D.juz_done)?D.juz_done.map(Number):null,jzApprox=false;if(!juz){juz=new Array(Math.floor(hp/20)).fill(0);jzApprox=true}
- let c=0;const curve=ds.slice().sort((x,y)=>x.day_date<y.day_date?-1:1).filter(d=>d.status!="off").map(d=>{c+=(+d.hifz||0)+(+d.review||0);return{d:d.day_date,v:c}});
- return{hp,rp,pr,ab,ex,att,g,a,pct,rate,juz,jzApprox,curve,tp:hp+rp}}
+ return{hp,rp,pr,ab,ex,att,g,a,pct,rate,juz,jzApprox,tp:hp+rp,has:tot+hp+rp>0}}
 function lvl(p,t){return p==null?["بدون خطة","neu"]:p>=t[0]?["ممتاز","ok"]:p>=t[1]?["جيد","mid"]:["يحتاج متابعة","bad"]}
 function levels(S){const m=lvl(S.pct,LV.plan),at=lvl(S.att,LV.att);
  const rr=S.hp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","mid"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز","ok"]:rr>=LV.rev/2?["جيد","mid"]:["يحتاج متابعة","bad"];
  return{mem:m,rev:rv,reg:at}}
 function ringSvg(p,sz){const r=44,c=2*Math.PI*r,v=Math.max(0,Math.min(100,p||0));return'<svg viewBox="0 0 100 100" width="'+sz+'" height="'+sz+'" aria-hidden="true"><circle cx="50" cy="50" r="'+r+'" fill="none" stroke="#e4f1ea" stroke-width="10"/><circle cx="50" cy="50" r="'+r+'" fill="none" stroke="#1f6b4a" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(c*v/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 50 50)"/><text x="50" y="57" text-anchor="middle" font-size="22" font-weight="800" fill="#0f4d35">'+(p==null?"—":nm(p)+"٪")+'</text></svg>'}
-function curveSvg(cv,W,H){if(!cv.length)return'<div class="mu">لا توجد بيانات كافية.</div>';
- const mx=Math.max(1,cv[cv.length-1].v),n=cv.length,px=i=>n==1?W/2:8+(W-16)*i/(n-1),py=v=>H-14-(H-30)*v/mx;
- const pts=cv.map((p,i)=>px(i).toFixed(1)+","+py(p.v).toFixed(1));
- const area="M"+px(0).toFixed(1)+","+(H-14)+" L"+pts.join(" L")+" L"+px(n-1).toFixed(1)+","+(H-14)+" Z";
- return'<svg viewBox="0 0 '+W+' '+H+'" class="curve" role="img" aria-label="منحنى التقدم"><path d="'+area+'" fill="#e4f1ea"/><polyline points="'+pts.join(" ")+'" fill="none" stroke="#1f6b4a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>'+cv.map((p,i)=>'<circle cx="'+px(i).toFixed(1)+'" cy="'+py(p.v).toFixed(1)+'" r="3.2" fill="#d9a21b"/>').join("")+'<text x="'+(W-6)+'" y="12" font-size="11" fill="#55655c" text-anchor="start" direction="rtl" style="unicode-bidi:plaintext">'+nm(mx)+' صفحة</text></svg>'}
 async function loadMo(){const k=ST.sid+":"+ST.mon;if(MD[k]){ST.moBusy=false;return draw()}
  ST.moBusy=true;ST.moErr="";draw();
  try{const j=await rpc("parent_monthly",{p_token:TOKEN,p_student_id:ST.sid,p_month:ST.mon});MD[k]=j}catch(e){ST.moErr=e&&e.code=="other"&&e.status==404?"هذه الميزة ستتوفر قريباً.":fail(e)}
@@ -392,16 +385,13 @@ function drawMo(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
  if(ST.moBusy){M.innerHTML=h+'<div class="ctr mu">جاري التحميل...</div>';return}
  if(ST.moErr){M.innerHTML=h+'<div class="err">'+esc(ST.moErr)+'</div>';return}
  const D=MD[ST.sid+":"+ST.mon];
- if(!D||!(D.days||[]).length){M.innerHTML=h+'<div class="sc empty"><div class="nm">'+esc(kid.first_name||"")+'</div><div class="mu">لا توجد تقارير منشورة لهذا الشهر بعد.</div></div>';return}
+ if(!D||!moStats(D).has){M.innerHTML=h+'<div class="sc empty"><div class="nm">'+esc(kid.first_name||"")+'</div><div class="mu">لا توجد تقارير منشورة لهذا الشهر بعد.</div></div>';return}
  const S=moStats(D),L=levels(S);
  h+='<div class="sc mrep"><div class="mhd"><div><div class="nm">'+esc(D.first_name||kid.first_name)+'</div><div class="mu">'+esc([D.center_name,D.halaqa_name].filter(Boolean).join(" · "))+'</div><div class="mu">التقرير الشهري · '+mName(ST.mon)+'</div></div>'+(S.pct!=null?'<div class="ring">'+ringSvg(Math.min(100,S.pct),84)+'<small>من الخطة</small></div>':"")+'</div>';
  h+='<div class="st4">'+tile(nm(S.tp),"📖 صفحات")+tile(S.att==null?"—":nm(S.att)+"٪","✅ الحضور")+tile(S.jzApprox?"~"+nm(S.juz.length):nm(S.juz.length),"🎓 أجزاء")+tile(S.rate==null?"—":nm(S.rate),"⭐ التقييم")+'</div>';
  h+='<div class="mrow"><span class="tag neu">حفظ '+esc(pgf(S.hp))+'</span><span class="tag neu">مراجعة '+esc(pgf(S.rp))+'</span><span class="tag neu">حضور '+nm(S.pr)+' يوم</span>'+(S.ab+S.ex>0?'<span class="tag neu">غياب '+nm(S.ab+S.ex)+(S.ex>0?" (منه "+nm(S.ex)+" بعذر/بدون تسميع)":"")+'</span>':"")+'</div>';
  if(S.juz.length&&!S.jzApprox)h+='<div class="mu" style="margin-top:8px">الأجزاء المكتملة: '+S.juz.map(j=>"جزء "+nm(j)).join("، ")+'</div>';
  if(S.jzApprox&&S.juz.length)h+='<div class="mu" style="margin-top:8px">عدد الأجزاء تقريبي (حسب صفحات الحفظ ÷ ٢٠) حتى يضيف المعلم الأجزاء المكتملة.</div>';
- h+='<div class="msec">📈 منحنى التقدم (مجموع الصفحات خلال الشهر)</div>'+curveSvg(S.curve,300,120);
- const nt=(D.notes||[]).filter(n=>n&&n.note);
- h+='<div class="msec">📝 ملخص المعلم</div>'+(nt.length?nt.map(n=>'<div class="note"><small class="mu">أسبوع '+dl(n.week_start)+'</small><br>'+esc(n.note)+'</div>').join(""):'<div class="mu">لا توجد ملاحظات من المعلم هذا الشهر.</div>');
  h+='<div class="flex2"><button class="btn" data-a="mimg"'+(ST.dlb?" disabled":"")+'>🖼️ تنزيل صورة</button><button class="btn au" data-a="mpdf"'+(ST.dlb?" disabled":"")+'>📄 تنزيل PDF</button></div></div>';
  M.innerHTML=h}
 function drawGen(){const M=$("#main");let h=monNav();
@@ -424,7 +414,7 @@ function drawFu(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
  if(!D&&!ST.fuBusy&&!ST.fuTried){ST.fuTried=1;ST.fuBusy=true;rpc("parent_monthly",{p_token:TOKEN,p_student_id:ST.sid,p_month:cm}).then(j=>{MD[ST.sid+":"+cm]=j}).catch(()=>{}).then(()=>{ST.fuBusy=false;ST.fuTried=0;if(ST.tab=="fu")draw()})}
  h+='<div class="sc"><div class="nm">مستوى '+esc(kid.first_name||"")+' · '+mName(cm)+'</div>';
  if(ST.fuBusy||!D)h+='<div class="mu">'+(ST.fuBusy?"جاري التحميل...":"لا توجد بيانات كافية لهذا الشهر بعد.")+'</div>';
- else if(!(D.days||[]).length)h+='<div class="mu">لا توجد تقارير منشورة لهذا الشهر بعد.</div>';
+ else if(!moStats(D).has)h+='<div class="mu">لا توجد تقارير منشورة لهذا الشهر بعد.</div>';
  else{const S=moStats(D),L=levels(S);
   const row=(ic,t,v,why)=>'<div class="lvr"><span class="lic">'+ic+'</span><div class="lmid"><b>'+t+'</b><small>'+why+'</small></div><span class="lp '+v[1]+'">'+v[0]+'</span></div>';
   h+=row("📖","الحفظ",L.mem,S.pct==null?"لا توجد خطة محددة لهذا الشهر":"أنجز "+nm(S.pct)+"٪ من خطة الشهر ("+nm(S.a)+" من "+nm(S.g)+" صفحة)")+
@@ -439,7 +429,7 @@ function drawX(){if(ST.tab=="mo")drawMo();else if(ST.tab=="gen")drawGen();else d
 /* ---- image + PDF download ---- */
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
 function moCanvas(D,kid){const S=moStats(D),W=1080,cv=document.createElement("canvas");cv.width=W;
- const nts=(D.notes||[]).filter(n=>n&&n.note);const H=1480+Math.min(nts.length,3)*0;cv.height=H;const c=cv.getContext("2d");
+ const H=700;cv.height=H;const c=cv.getContext("2d");
  const F="'Segoe UI',Tahoma,'Noto Naskh Arabic','Noto Sans Arabic',Arial,sans-serif";c.direction="rtl";c.textAlign="right";
  c.fillStyle="#f4f1e8";c.fillRect(0,0,W,H);
  const g=c.createLinearGradient(0,0,W,260);g.addColorStop(0,"#0f4d35");g.addColorStop(1,"#1f6b4a");c.fillStyle=g;c.fillRect(0,0,W,280);
@@ -450,22 +440,7 @@ function moCanvas(D,kid){const S=moStats(D),W=1080,cv=document.createElement("ca
  const tiles=[[nm(S.tp),"صفحات الشهر"],[S.att==null?"—":nm(S.att)+"٪","الحضور"],[(S.jzApprox?"~":"")+nm(S.juz.length),"أجزاء مكتملة"],[S.rate==null?"—":nm(S.rate),"التقييم (من ١٠)"]];
  const tw=(W-120-3*20)/4;tiles.forEach((t,i)=>{const x=W-60-tw-(tw+20)*i,y=320;c.fillStyle="#fff";rr(c,x,y,tw,170,22);c.fill();c.strokeStyle="#d8d2bf";c.lineWidth=2;c.stroke();c.textAlign="center";c.fillStyle="#1f6b4a";c.font="800 54px "+F;c.fillText(t[0],x+tw/2,y+86);c.fillStyle="#55655c";c.font="600 27px "+F;c.fillText(t[1],x+tw/2,y+134);c.textAlign="right"});
  c.fillStyle="#1d2b24";c.font="700 32px "+F;c.fillText("حفظ "+pgf(S.hp)+"  -  مراجعة "+pgf(S.rp)+"  -  حضور "+nm(S.pr)+" يوم"+(S.ab+S.ex>0?"  -  غياب "+nm(S.ab+S.ex):""),W-60,562);
- c.fillStyle="#fff";rr(c,60,600,W-120,400,26);c.fill();c.strokeStyle="#d8d2bf";c.stroke();
- c.fillStyle="#0f4d35";c.font="800 36px "+F;c.fillText("منحنى التقدم (مجموع الصفحات)",W-90,656);
- const cvp=S.curve,mx=Math.max(1,cvp.length?cvp[cvp.length-1].v:1),X0=100,X1=W-100,Y0=950,Y1=700;
- c.strokeStyle="#e4f1ea";c.lineWidth=2;for(let i=0;i<=3;i++){const y=Y0-(Y0-Y1)*i/3;c.beginPath();c.moveTo(X0,y);c.lineTo(X1,y);c.stroke()}
- if(cvp.length){const n=cvp.length,px=i=>n==1?(X0+X1)/2:X0+(X1-X0)*i/(n-1),py=v=>Y0-(Y0-Y1)*v/mx;
-  c.beginPath();c.moveTo(px(0),Y0);cvp.forEach((p,i)=>c.lineTo(px(i),py(p.v)));c.lineTo(px(n-1),Y0);c.closePath();c.fillStyle="rgba(31,107,74,.14)";c.fill();
-  c.beginPath();cvp.forEach((p,i)=>i?c.lineTo(px(i),py(p.v)):c.moveTo(px(i),py(p.v)));c.strokeStyle="#1f6b4a";c.lineWidth=6;c.lineJoin="round";c.stroke();
-  cvp.forEach((p,i)=>{c.fillStyle="#d9a21b";c.beginPath();c.arc(px(i),py(p.v),8,0,7);c.fill()});
-  c.fillStyle="#55655c";c.font="600 24px "+F;c.textAlign="left";c.fillText(nm(mx)+" صفحة",X0,Y1-12);c.textAlign="right"}
- c.fillStyle="#fff";rr(c,60,1030,W-120,360,26);c.fill();c.strokeStyle="#d8d2bf";c.stroke();
- c.fillStyle="#0f4d35";c.font="800 36px "+F;c.fillText("ملخص المعلم",W-90,1086);
- c.fillStyle="#1d2b24";c.font="500 31px "+F;let y=1140,lines=0;
- const paras=nts.length?nts.map(n=>n.note):["لا توجد ملاحظات من المعلم هذا الشهر."];
- outer:for(const p of paras){let ln="";for(const w of p.split(/\s+/)){const t=ln?ln+" "+w:w;if(c.measureText(t).width>W-200&&ln){c.fillText(ln,W-90,y);y+=48;ln=w;if(++lines>=6){break outer}}else ln=t}
-  if(ln){c.fillText(ln,W-90,y);y+=62;lines++;if(lines>=6)break}}
- c.fillStyle="#55655c";c.font="500 26px "+F;c.textAlign="center";c.fillText("تقرير الحلقة - "+mName(ST.mon),W/2,1450);return cv}
+ c.fillStyle="#55655c";c.font="500 26px "+F;c.textAlign="center";c.fillText("تقرير الحلقة - "+mName(ST.mon),W/2,660);return cv}
 function pdfFromCanvas(cv){const j=atob(cv.toDataURL("image/jpeg",0.92).split(",")[1]),jb=new Uint8Array(j.length);for(let i=0;i<j.length;i++)jb[i]=j.charCodeAt(i);
  const PW=595,PH=Math.round(595*cv.height/cv.width),en=new TextEncoder(),parts=[],off=[];let pos=0;
  const put=x=>{const b=typeof x=="string"?en.encode(x):x;parts.push(b);pos+=b.length};
