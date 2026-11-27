@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>تقرير الحلقة</title><meta name="theme-color" content="#1f6b4a"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="icon" href="favicon.ico"><link rel="apple-touch-icon" href="icon-192.png">
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>تقرير الحلقة</title><meta name="theme-color" content="#1f6b4a"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><link rel="icon" href="../favicon.ico"><link rel="apple-touch-icon" href="../icon-192.png">
 <style>
 :root{--g:#1f6b4a;--gd:#0f4d35;--gl:#e4f1ea;--au:#d9a21b;--aud:#7a5a0a;--bg:#f4f1e8;--cd:#fff;--tx:#1d2b24;--mu:#55655c;--bd:#d8d2bf;--rd:#b3261e;--rdl:#fbe9e7;--ok:#17733a;--sh:0 1px 3px rgba(0,0,0,.12);--ft:Tahoma,"Segoe UI",system-ui,-apple-system,"Noto Sans Arabic","Noto Naskh Arabic",Arial,sans-serif}
 @media(prefers-color-scheme:dark){:root{--g:#5fc08f;--gd:#0b1612;--gl:#1d3a2c;--au:#e8b73c;--aud:#f0cf7a;--bg:#101714;--cd:#19231e;--tx:#e8efe9;--mu:#a7b8ad;--bd:#33443b;--rd:#ff8a80;--rdl:#3a1f1c;--ok:#6fd49a;--sh:none}}
@@ -49,7 +49,7 @@ header small{color:var(--mu);font-size:14px}
 .toast{position:fixed;bottom:16px;inset-inline:16px;max-width:560px;margin:auto;background:var(--gd);color:#fff;padding:10px 14px;border-radius:12px;text-align:center;z-index:9}
 .hid{display:none}
 .ctr{text-align:center;padding:30px 0}
-</style></head><body><div id="app"><header><img src="icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div></header><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
+</style></head><body><div id="app"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div></header><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
 <script>
 "use strict";
 const URL_="https://tcvlffipaxrxvlmaliaq.supabase.co",KEY="sb_publishable_Nno92kn3tJq0GTcfLqYQjg_7_3YJG4b";
@@ -89,17 +89,24 @@ async function init(){
 async function load(){
  ST.busy=true;draw();
  try{const j=await rpc("parent_weekly",{p_token:TOKEN,p_week_start:ST.week});
-  ST.reps=(j.reports||[]);ST.busy=false;ST.err="";
+  ST.reps=(j.reports||[]);ST.err="";
   const r=ST.reps.find(x=>x.student_id==ST.sid);
+  if(r)await loadMine();ST.busy=false;
   if(r)rpc("parent_record_view",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week}).catch(()=>{})}
  catch(e){ST.busy=false;ST.reps=[];ST.err=fail(e)}
  draw()}
-function lk(k){return"hq:"+ST.parent+":"+ST.sid+":"+k}
-function getLS(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
-function setLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+/* own reactions and comments come from the server (parent_mine), cached in memory */
+let MINE={};
+function mk(){return ST.sid+":"+ST.week}
+function mineList(){return MINE[mk()]||[]}
+async function loadMine(){const k=mk();try{const j=await rpc("parent_mine",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week});MINE[k]=j.items||[]}catch(e){MINE[k]=MINE[k]||[]}}
+function dk(day){return day||null}
+function hasHeart(day){return mineList().some(x=>x.kind=="mashallah"&&(x.day_date||null)==dk(day))}
+function myComments(day){return mineList().filter(x=>x.kind=="comment"&&(x.day_date||null)==dk(day)).map(x=>x.comment)}
+function addMine(o){const k=mk();MINE[k]=(MINE[k]||[]).concat([o])}
 const STT={heard:["سمّع","ok"],not_heard:["لم يسمّع","bad"],excused:["معذور","neu"],absent:["غائب","bad"],off:["إجازة","neu"]};
 function reactBox(day){
- const key=ST.week+":"+(day||"week"),on=getLS(lk("r:"+key)),cm=getLS(lk("c:"+key))||[];
+ const on=hasHeart(day),cm=myComments(day);
  return'<div class="react"><button class="heart'+(on?" on":"")+'" data-a="heart" data-d="'+esc(day||"")+'"'+(on?" disabled":"")+'>'+(on?"❤️ أرسلت ما شاء الله":"🤍 ما شاء الله")+'</button><button class="btn s" data-a="cmt" data-d="'+esc(day||"")+'">💬 تعليق</button></div>'+
  '<div id="cb-'+esc(day||"week")+'"></div>'+cm.map(c=>'<div class="sent">✔ تعليقك: '+esc(c)+'</div>').join("")}
 function draw(){
@@ -138,8 +145,8 @@ document.addEventListener("click",async ev=>{
  else if(a=="next"){ST.week=shift(ST.week,7);load()}
  else if(a=="retry"){load()}
  else if(a=="heart"){const d=b.dataset.d||null;b.disabled=true;
-  try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"mashallah",p_comment:null});setLS(lk("r:"+ST.week+":"+(d||"week")),1);toast("وصلت ما شاء الله للمعلم ❤️");draw()}
-  catch(e){if(e.code=="already_reacted"){setLS(lk("r:"+ST.week+":"+(d||"week")),1);draw()}else b.disabled=false;toast(fail(e))}}
+  try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"mashallah",p_comment:null});addMine({kind:"mashallah",day_date:d,comment:null});toast("وصلت ما شاء الله للمعلم ❤️");draw()}
+  catch(e){if(e.code=="already_reacted"){addMine({kind:"mashallah",day_date:d,comment:null});draw()}else b.disabled=false;toast(fail(e))}}
  else if(a=="cmt"){const d=b.dataset.d||"",box=document.getElementById("cb-"+(d||"week"));
   if(box.firstChild){box.innerHTML="";return}
   box.innerHTML='<textarea class="cm" maxlength="200" placeholder="اكتب تعليقك (حتى ٢٠٠ حرف)"></textarea><div class="mu cnt">٠ / ٢٠٠</div><button class="btn" data-a="send" data-d="'+esc(d)+'">إرسال</button>';
@@ -148,7 +155,7 @@ document.addEventListener("click",async ev=>{
   if(!v){toast("اكتب تعليقاً أولاً");return}
   b.disabled=true;
   try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"comment",p_comment:v});
-   const k=lk("c:"+ST.week+":"+(d||"week")),l=getLS(k)||[];l.push(v);setLS(k,l);toast("تم إرسال تعليقك");draw()}
+   addMine({kind:"comment",day_date:d,comment:v});toast("تم إرسال تعليقك");draw()}
   catch(e){b.disabled=false;toast(fail(e))}}
 });
 init();
