@@ -156,7 +156,7 @@ async function loadNotes(){
   ST.newIds={};ST.notes.forEach(n=>{if(!n.seen)ST.newIds[n.id]=1});
   rpc("parent_notifications_seen",{p_token:TOKEN}).catch(()=>{})}
  catch(e){}
- bell()}
+ bell();if(ST.view=="notes"&&ST.kids.length)draw()}
 function bell(){const b=$("#bell");if(!b)return;b.classList.remove("hid");$("#bd").textContent=ST.unseen>0?nm(Math.min(ST.unseen,99)):""}
 function ago(iso){const d=new Date(iso),t=new Date(),m=Math.round((t-d)/60000);if(m<1)return"الآن";if(m<60)return"قبل "+nm(m)+" دقيقة";const h=Math.round(m/60);if(h<24)return"قبل "+nm(h)+" ساعة";return nm(d.getDate())+" "+MON[d.getMonth()]}
 function drawNotes(){
@@ -217,7 +217,7 @@ function dayCard(d){
  let h='<div class="dcard '+(s[1]=="ok"?"":s[1])+'"><div class="dh"><div class="dn"><span class="dic">'+s[2]+'</span><div><b>'+DAY[dt.getDay()]+'</b><small>'+dl(d.day_date)+'</small></div></div><span class="tag '+s[1]+'">'+esc(s[0])+'</span></div>';
  if(its.length){
   its.forEach(i=>{const rv=i.type=="review";
-   h+='<div class="itm'+(rv?" review":"")+'"><span class="ii">'+(rv?"🔁":i.type=="hifz"?"📖":"📌")+'</span><div class="ib"><b>'+esc(i.name||"")+'</b><small>'+(rv?"مراجعة":i.type=="hifz"?"حفظ جديد":"تسميع")+(i.ay?" · الآيات: "+esc(i.ay):"")+'</small></div>'+(i.pages?'<span class="pg">'+esc(pgf(i.pages))+'</span>':"")+'</div>'});
+   h+='<div class="itm'+(rv?" review":"")+'"><span class="ii">'+(rv?"🔁":i.type=="hifz"?"📖":"📌")+'</span><div class="ib"><b>'+esc(i.name||"")+'</b><small>'+(rv?"مراجعة":i.type=="hifz"?"حفظ جديد":"تسميع")+(i.ay?" · الآيات: "+esc(nm(i.ay)):"")+'</small></div>'+(i.pages?'<span class="pg">'+esc(pgf(i.pages))+'</span>':"")+'</div>'});
   if(hp>0&&rp>0)h+='<div class="sumrow"><span class="tag">📖 حفظ '+esc(pgf(hp))+'</span><span class="tag neu">🔁 مراجعة '+esc(pgf(rp))+'</span></div>'}
  else if(d.status=="heard")h+='<div class="mu" style="margin-top:6px">لا توجد تفاصيل لهذا اليوم.</div>';
  if(d.note)h+='<div class="note">📝 '+esc(d.note)+'</div>';
