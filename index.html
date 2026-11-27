@@ -1125,7 +1125,7 @@ async function pubRaw(fn,args){const c=pubCfg();if(!(pubUrl(c.url)&&c.key&&!pubK
  return j}
 function pubRegErr(e){const m=e&&e.message;return({cfg:"أكمل الرابط والمفتاح العام أولاً",code:"رمز الدعوة غير صحيح: كلمة سر النشر المحفوظة لا تطابق المشتركة. اضغط 👁 لترى ما كتبته وصحّحه في الخانة أعلاه",weak:"كلمة السر الجديدة يجب أن تكون 8 أحرف على الأقل",taken:"اختر كلمة سر أخرى، هذه غير متاحة",rate:"محاولات كثيرة. انتظر 10 دقائق",legacy:"هذا الحساب مشترك. سجّل حسابك الجديد أولاً بالزر الأول",pw:"كلمة سر النشر الحالية غير صحيحة",net:"تعذّر الاتصال بالإنترنت",nofn:"قاعدة البيانات تحتاج تحديث"})[m]||"تعذّر تنفيذ الطلب"}
 function pubNewPw(){const n1=($("#pr_n1")||{}).value||"",n2=($("#pr_n2")||{}).value||"";if(n1.length<8){toast("كلمة السر الجديدة يجب أن تكون 8 أحرف على الأقل");return null}if(n1!==n2){toast("كلمتا السر غير متطابقتين");return null}return n1}
-A.pubReg=async()=>{const n1=pubNewPw();if(!n1)return;const code=(($("#pr_code")||{}).value||"")||pubCfg().pw||"";if(!code){toast("اكتب كلمة سر النشر في الخانة أعلاه أولاً");return}
+A.pubReg=async()=>{const n1=pubNewPw();if(!n1)return;const code=(($("#pr_code")||{}).value||"")||pubCfg().pw||"";if(!code){toast("اكتب رمز الدعوة في خانته");return}
  if(!confirm("إنشاء حساب محفظ جديد بكلمة سر خاصة؟ طلابك سيُنشرون في حسابك أنت فقط. احفظ كلمة السر الجديدة جيداً."))return;
  try{await pubRaw("teacher_register",{p_code:code,p_new_secret:n1,p_name:($("#pr_nm")||{}).value||null});const c=pubCfg();c.pw=n1;pubSave(c);toast("تم إنشاء حسابك ✅ كلمة سر النشر صارت الجديدة",null,5000);render(true)}catch(e){toast(pubRegErr(e),null,6000)}};
 A.pubEye=()=>{document.querySelectorAll('[data-c="pubp"],#pr_code,#pr_n1,#pr_n2').forEach(e=>{e.type=e.type==="password"?"text":"password"})};
