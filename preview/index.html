@@ -1147,7 +1147,7 @@ async function tRpc(fn,args){const c=pubCfg();if(!pubReady(c))throw new Error("c
 function tErr(e){const m=e&&e.message;return m=="cfg"?"أكمل إعدادات النشر أولاً (أسفل هذه الصفحة)":m=="pw"?"كلمة سر النشر غير صحيحة":m=="net"?"تعذّر الاتصال بالإنترنت":m=="nofn"?"دالة ناقصة في قاعدة البيانات. نفّذ ملف SQL المحدّث":"تعذّر تنفيذ الطلب"}
 ui.par=ui.par||{list:null,busy:false,err:"",edit:null,sel:{},nw:null,nn:"",ns:{}};
 ui.int=ui.int||{key:"",data:null,busy:false,err:""};
-function firstName(s){return String(s.name||"").trim().split(/\s+/)[0]}
+function firstName(s){return String(s.name||"").trim().replace(/\s+/g," ")}
 function parLink(tok){return new URL("parent.html",location.href).href.split("#")[0]+"#k="+tok}
 function stuPick(sel,att){const L=S.students.filter(s=>!s.arch);if(!L.length)return'<div class="mu">لا يوجد طلاب.</div>';
  return L.map(s=>'<label class="flex" style="margin:2px 0;color:var(--tx);font-size:16px;font-weight:400"><input type="checkbox" data-c="'+att+'" data-id="'+s.id+'"'+(sel[s.id]?" checked":"")+"> "+esc(s.name)+"</label>").join("")}
@@ -1274,7 +1274,7 @@ function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
  return{week_start:a,week_end:b,honor:pubHonor(a),students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
   const days=[];D.days.forEach((y,i)=>{if(y.none)return;const st=stm[y.st];if(!st)return;if(st=="heard")pr++;else if(st=="absent")ab++;else if(st=="excused")ex++;
    days.push({day_date:ks[i],status:st,items:y.it.filter(x=>!x.ex).map(x=>({name:x.nm,ay:x.ay||null,pages:x.pg||0,type:x.ty=="مراجعة"?"review":x.ty=="حفظ جديد"?"hifz":null})),note:y.nt||null})});
-  return{app_id:String(s.id),first_name:String(s.name||"").trim().split(/\s+/)[0],group_name:s.grp||null,
+  return{app_id:String(s.id),first_name:firstName(s),group_name:s.grp||null,
    goal_pages:G.pg>0?G.pg:null,goal_type:G.pg>0?G.type:null,achieved_pages:G.pg>0?D.ac:null,hifz_pages:D.hp,review_pages:D.rp,
    present_days:pr,absent_days:ab,excused_days:ex,rating:D.sc!=null?D.sc:null,teacher_note:D.tn||null,days}})}}
 function pubCard(){const c=pubCfg(),[a]=wrange(),l=(c.last||{})[a];
@@ -1288,7 +1288,7 @@ A.pubGo=async()=>{if(ui.pubBusy)return;const c=pubCfg();
  if(!pubReady(c)){toast("أكمل إعدادات النشر من تبويب الإعدادات أولاً",null,4500);return}
  if(navigator.onLine===false){toast("لا يوجد إنترنت الآن. لم يُنشر شيء، وتطبيقك يعمل كالمعتاد. انشر لاحقاً",null,5000);return}
  const P=pubPayload();if(!P.students.length){toast("لا يوجد طلاب في هذا الأسبوع");return}
- if(!confirm("نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء الأولى فقط كما يلي:\n"+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
+ if(!confirm("نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء كاملة كما يلي:\n"+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
  ui.pubBusy=true;render(true);
  try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);
   const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
