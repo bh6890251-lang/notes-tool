@@ -441,8 +441,8 @@ const epg=e=>{if(!e||e.na||e.sur<0)return 0;const w=ewt(e);return w>0?q4(w):0};
 const qn=v=>Math.round(v*4)/4;
 const doneP=(run,Tx)=>qn(run)>=q4(Tx)-1e-9;
 const pgOf=e=>e.pg?e.pg:((e.hf==1||e.hf==2)&&e.sur>=0?epg(e):0);
-/* NOTE (kept exactly as the old app): the first entry loses its "na" flag here, extra entries keep it */
-const ents=d=>[{sur:d.sur,pg:d.pg,hf:d.hf,fa:d.fa,ta:d.ta,jz:d.jz}].concat(d.x||[]);
+/* the first entry now keeps its "na" flag too (an unedited suggestion counts 0 pages, like extra entries) */
+const ents=d=>[{sur:d.sur,pg:d.pg,hf:d.hf,fa:d.fa,ta:d.ta,jz:d.jz,na:d.na}].concat(d.x||[]);
 const ayTxt=e=>{if(!e||e.sur<0)return"";const Tt=AYC[e.sur],f=+e.fa||0,t=+e.ta||0;if(!f&&!t)return"";if(f&&t)return(f==t?" آية "+f:" من آية "+f+" إلى "+t);return f?" من آية "+f+(f<Tt?" إلى "+Tt:""):" من آية 1 إلى "+t};
 const ent=e=>e&&e.jz?("م. "+jzName(e.jz)+(e.pg?"/ "+pgf(e.pg):"")):e.sur>=0?(e.hf==2?"م. ":"")+SUR[e.sur]+ayTxt(e)+(e.pg?"/ "+pgf(e.pg):""):"";
 const exs=x=>("اختبار "+(x.t||"")).trim()+(x.pc!=null&&x.pc!==""?" "+x.pc+"%":"");
