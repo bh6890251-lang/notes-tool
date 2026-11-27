@@ -130,7 +130,7 @@ details.pbar{display:block}details.pbar summary{cursor:pointer;min-height:44px;d
 .dbody .itm{margin:6px 0}
 .tg{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--au);color:#2b2000;font-size:12px;font-weight:800;margin-inline-start:6px}
 
-</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><div class="top" id="top"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="off" class="hid" style="background:#fff3cd;color:#664d03;border:1px solid #ffe69c;padding:8px 12px;margin:6px 10px;border-radius:10px;font-size:14px;text-align:center"></div><div id="kb"></div></div><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
+</style><script>(function(){try{var b=new URL("./",location.href).href,m={name:"تقرير الحلقة",short_name:"تقرير الحلقة",lang:"ar",dir:"rtl",id:b+"parent.html",start_url:location.href,scope:b,display:"standalone",background_color:"#f4f1e8",theme_color:"#1f6b4a",icons:[{src:new URL("../icon-192.png",location.href).href,sizes:"192x192",type:"image/png"},{src:new URL("../icon-512.png",location.href).href,sizes:"512x512",type:"image/png"}]};var l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)}catch(e){}})()</script></head><body><div id="app"><div class="top" id="top"><header><img src="../icon-192.png" alt=""><div><b id="ttl">تقرير الحلقة</b><small id="sub"></small></div><button class="bell hid" id="bell" data-a="bell" aria-label="الإشعارات">🔔<span class="bd" id="bd"></span></button></header><div id="off" class="hid" style="background:#fff3cd;color:#664d03;border:1px solid #ffe69c;padding:8px 12px;margin:6px 10px;border-radius:10px;font-size:14px;text-align:center"></div><div id="apb" class="hid" style="background:#e8f3ec;border:1px solid #b9d9c5;padding:10px 12px;margin:6px 10px;border-radius:10px;text-align:center"></div><div id="kb"></div></div><div id="main"><div class="ctr mu">جاري التحميل...</div></div></div><div id="tt" class="toast hid" role="status"></div>
 <script>
 "use strict";
 const URL_="https://tcvlffipaxrxvlmaliaq.supabase.co",KEY="sb_publishable_Nno92kn3tJq0GTcfLqYQjg_7_3YJG4b";
@@ -141,7 +141,7 @@ const AR="٠١٢٣٤٥٦٧٨٩";const nm=n=>String(n).replace(/\d/g,d=>AR[d]);
 const MON=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const DAY=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 const DAYS=["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"];
-const TOKEN=(()=>{const m=/(?:^#|&)k=([^&]+)/.exec(location.hash);let t=m?decodeURIComponent(m[1]).trim():"";if(!t){try{t=localStorage.getItem("hq_tok")||""}catch(e){}}return t})();
+const TOKEN=(()=>{const m=/(?:^#|&)k=([^&]+)/.exec(location.hash)||/(?:^\?|&)k=([^&]+)/.exec(location.search);let t=m?decodeURIComponent(m[1]).trim():"";if(!t){try{t=localStorage.getItem("hq_tok")||""}catch(e){}}return t})();
 let ST={parent:"",kids:[],sid:null,week:null,reps:[],busy:false,err:"",view:"rep",notes:[],newIds:{},unseen:0,honor:null,weeks:[],push:"",canInstall:false,open:{}};
 function pd(s){const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)}
 function fd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
@@ -224,19 +224,21 @@ function drawNotes(){
   h+='<button class="nt'+(nw?" new":"")+'" data-a="note" data-sid="'+esc(n.student_id)+'" data-w="'+esc(n.week_start||"")+'"><span class="ni">📄</span><span><b>'+esc(n.title)+'</b>'+esc(n.body)+'<br><small>'+esc(ago(n.created_at))+'</small></span>'+(nw?'<span class="dot" aria-label="جديد"></span>':"")+'</button>'});
  $("#main").innerHTML=h}
 
+function showApp(){try{if(window.AndroidBridge||!/android/i.test(navigator.userAgent)||standalone())return;const e=document.getElementById("apb");if(!e)return;const apk="https://github.com/bh6890251-lang/notes-tool/releases/latest/download/halaqa-parent.apk";const it="intent://"+location.host+location.pathname+"?k="+encodeURIComponent(TOKEN)+"#Intent;scheme=https;package=app.halaqa.parent;S.browser_fallback_url="+encodeURIComponent(apk)+";end";const st="text-decoration:none;display:inline-block;margin:4px";e.innerHTML='<b>📲 افتح تقريرك في التطبيق</b><div class="mu">لتصلك التنبيهات ويعمل بدون إنترنت.</div><a class="btn" style="'+st+'" href="'+it+'">افتح في التطبيق</a><a class="btn s" style="'+st+'" href="'+apk+'">تنزيل التطبيق</a><div class="mu">بعد التثبيت أدخل رمز الدعوة من رسالة المحفظ.</div>';e.classList.remove("hid")}catch(x){}}
+function relink(){const d=document.createElement("div");d.className="ctr";d.innerHTML='<button class="btn" id="rl">🔑 إدخال رمز أو رابط جديد</button>';$("#main").appendChild(d);$("#rl").onclick=async()=>{const v=(prompt("الصق الرابط الجديد أو اكتب رمز الدعوة")||"").trim();if(!v)return;let t="";const m=/[?#&]k=([A-Za-z0-9_\-]+)/.exec(v);if(m)t=m[1];else if(v.replace(/[^A-Za-z0-9]/g,"").length<=10){try{const j=await rpc("parent_resolve_code",{p_code:v});if(j&&j.ok)t=j.token;else{toast("الرمز غير صحيح");return}}catch(e){toast(fail(e));return}}else t=v.replace(/[^A-Za-z0-9_\-]/g,"");if(t.length<16){toast("الرابط غير صحيح");return}location.hash="k="+t;location.reload()}}
 async function init(){
- if(!TOKEN||TOKEN.length<16){showErr("افتح الرابط الخاص بك كما أرسله لك معلم الحلقة.");return}
+ if(!TOKEN||TOKEN.length<16){showErr("افتح الرابط الخاص بك كما أرسله لك معلم الحلقة.");relink();return}
  try{const o=localStorage.getItem("hq_tok");if(o&&o!==TOKEN)cpurge()}catch(e){}
  try{const j=await rpc("parent_login",{p_token:TOKEN});
   try{localStorage.setItem("hq_tok",TOKEN)}catch(e){}
   ST.parent=j.parent;ST.kids=j.children||[];
-  $("#sub").textContent="أهلاً "+ST.parent;
+  $("#sub").textContent="أهلاً "+ST.parent;showApp();
   swReg();
   if(!ST.kids.length){$("#main").innerHTML='<div class="card">لا يوجد أبناء مرتبطون بهذا الرابط بعد. تواصل مع معلم الحلقة.</div>';return}
   ST.sid=ST.kids[0].student_id;ST.week=curWeek();loadWeeks();
   loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()});
   await load()}
- catch(e){showErr(fail(e),e.code=="net"||e.code=="other"?init:null)}}
+ catch(e){showErr(fail(e),e.code=="net"||e.code=="other"?init:null);if(["bad_token","revoked","expired"].includes(e.code))relink()}}
 async function loadWeeks(){try{const j=await rpc("parent_weeks",{p_token:TOKEN});ST.weeks=(j.weeks||[]).map(String);if(ST.kids.length)draw()}catch(e){}}
 function wlist(){const s={};(ST.weeks||[]).forEach(w=>s[w]=1);s[curWeek()]=1;s[ST.week]=1;return Object.keys(s).sort()}
 function prevW(){const l=wlist().filter(w=>w<ST.week);return l.length?l[l.length-1]:null}
