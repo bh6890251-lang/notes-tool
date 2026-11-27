@@ -63,8 +63,8 @@ html.dk .seg button.on{color:#06210f}
 @media(prefers-color-scheme:dark){html.auto .seg button.on{color:#06210f}}
 .seg button.on.ab{background:var(--rd);color:#fff}
 .seg button.on.ns{background:var(--au);color:#2a2008}
-nav.bot{position:fixed;bottom:0;inset-inline:0;background:var(--cd);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(4,1fr);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
-nav.bot button{min-height:60px;border:0;background:transparent;color:var(--mu);font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+nav.bot{position:fixed;bottom:0;inset-inline:0;background:var(--cd);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(5,1fr);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+nav.bot button{min-height:60px;border:0;background:transparent;color:var(--mu);font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
 nav.bot button svg{width:24px;height:24px}
 nav.bot button.on{color:var(--g)}
 nav.bot button.on::after{content:"";width:28px;height:3px;border-radius:2px;background:var(--g);margin-top:1px}
@@ -415,8 +415,8 @@ const epg=e=>{if(!e||e.na||e.sur<0)return 0;const w=ewt(e);return w>0?q4(w):0};
 const qn=v=>Math.round(v*4)/4;
 const doneP=(run,Tx)=>qn(run)>=q4(Tx)-1e-9;
 const pgOf=e=>e.pg?e.pg:((e.hf==1||e.hf==2)&&e.sur>=0?epg(e):0);
-/* NOTE (kept exactly as the old app): the first entry loses its "na" flag here, extra entries keep it */
-const ents=d=>[{sur:d.sur,pg:d.pg,hf:d.hf,fa:d.fa,ta:d.ta,jz:d.jz}].concat(d.x||[]);
+/* the first entry now keeps its "na" flag too (an unedited suggestion counts 0 pages, like extra entries) */
+const ents=d=>[{sur:d.sur,pg:d.pg,hf:d.hf,fa:d.fa,ta:d.ta,jz:d.jz,na:d.na}].concat(d.x||[]);
 const ayTxt=e=>{if(!e||e.sur<0)return"";const Tt=AYC[e.sur],f=+e.fa||0,t=+e.ta||0;if(!f&&!t)return"";if(f&&t)return(f==t?" آية "+f:" من آية "+f+" إلى "+t);return f?" من آية "+f+(f<Tt?" إلى "+Tt:""):" من آية 1 إلى "+t};
 const ent=e=>e&&e.jz?("م. "+jzName(e.jz)+(e.pg?"/ "+pgf(e.pg):"")):e.sur>=0?(e.hf==2?"م. ":"")+SUR[e.sur]+ayTxt(e)+(e.pg?"/ "+pgf(e.pg):""):"";
 const exs=x=>("اختبار "+(x.t||"")).trim()+(x.pc!=null&&x.pc!==""?" "+x.pc+"%":"");
@@ -525,7 +525,7 @@ const ICONS={today:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
  students:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>',
  reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>'};
-const NAV=[["today","اليوم"],["students","الطلاب"],["reports","التقارير"],["settings","الإعدادات"]];
+const NAV=[["today","اليوم"],["students","الطلاب"],["reports","التقارير"],["portal","أولياء الأمور"],["settings","الإعدادات"]];
 
 /* ---- toast with undo ---- */
 function toast(msg,undo,ms){const box=$("#toast");if(!box)return;const t=document.createElement("div");t.className="tst";t.setAttribute("role","status");
@@ -552,7 +552,7 @@ document.addEventListener("click",e=>{const el=e.target.closest("[data-a]");if(!
 
 /* ---- render ---- */
 let scrollKeep=null;
-function render(keep){const y=window.scrollY;const m=$("#main");if(!m)return;m.innerHTML=({today:vToday,students:vStudents,reports:vReports,settings:vSettings}[ui.tab]||vToday)();
+function render(keep){const y=window.scrollY;const m=$("#main");if(!m)return;m.innerHTML=({today:vToday,students:vStudents,reports:vReports,portal:vPortal,settings:vSettings}[ui.tab]||vToday)();
  $$("nav.bot button").forEach(b=>b.classList.toggle("on",b.dataset.t===ui.tab));renderBars();if(keep!==false)window.scrollTo(0,y);afterRender()}
 function dkAnim(){const rm=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;$$("[data-cnt]").forEach(e=>{const n=+e.dataset.cnt;if(rm||!n){e.textContent=n;return}const t0=performance.now();e.textContent=0;const f=t=>{const p=Math.min(1,(t-t0)/800);e.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});setTimeout(()=>$$(".dkbar i[data-w]").forEach(e=>e.style.width=e.dataset.w+"%"),60)}
 function afterRender(){if(ui.tab==="reports"&&ui.sub.reports==="daily")dkAnim();if(ui.tab==="reports"&&ui.sub.reports==="exams")cu();if(ui.tab==="students"&&ui.sub.students==="honor")drawHb();}
@@ -951,7 +951,7 @@ async function hbCanvas(){await loadFonts();const H=honor(ui.mg.hb),W=1080,Hh=19
  x.fillStyle="#f6dd8f";x.font="700 36px "+CQ;x.textAlign="center";x.fillText("بارك الله فيهم ونفع بهم",W/2,Hh-86);return c}
 
 /* ================= Reports: view ================= */
-const SUBS_RP=[["daily","يومي"],["weekly","أسبوعي"],["monthly","شهري"],["exams","الاختبارات"],["parent","ولي الأمر"],["star","نجم الأسبوع"],["excel","Excel"]];
+const SUBS_RP=[["daily","يومي"],["weekly","أسبوعي"],["monthly","شهري"],["exams","الاختبارات"],["parent","ولي الأمر"]]; /* "star" and "excel" tabs hidden at the user's request; their code is kept */
 function vReports(){const c=ui.sub.reports;return chipsH("reports",SUBS_RP,c)+({daily:vDaily,weekly:vWeekly,monthly:vMonthly,exams:vExams,parent:vParent,star:vStar,excel:vExcel}[c]||vDaily)()}
 const outCard=(id,title,txt,kind)=>'<div class="card"><b>'+title+'</b><div class="text-out" id="'+id+'" dir="rtl">'+esc(txt)+'</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="cp" data-k="'+kind+'">📋 نسخ</button><button type="button" class="btn s" data-a="wa" data-k="'+kind+'">💬 واتساب</button>'+(kind=="d"||kind=="w"?'<button type="button" class="btn au" data-a="img" data-k="'+kind+'">🖼️ صورة</button>':"")+"</div></div>";
 const txtOf=k=>k=="d"?dText():k=="w"?wText():k=="r"?wRankText():/^d[1-4]$/.test(k)?dkText(k):"";
@@ -1094,6 +1094,185 @@ outCard("pwout","📤 نص الواتساب (ولي الأمر)",pwText(pwCur())
 C.pws=el=>{ui.pws=el.value;render()};
 A.pwm=el=>{ui.pwm=el.dataset.v;render()};
 A.pwPrint=()=>{const p=$("#prt");p.innerHTML='<div class="pb"><button type="button" class="btn" data-a="prtGo">🖨️ طباعة / حفظ PDF</button><button type="button" class="btn s" data-a="prtX">إغلاق</button></div>'+pwHtml(pwCur());p.classList.remove("hid");p.scrollTop=0};
+/* ===== parent portal, phase 2: publish the weekly summary to the teacher's own Supabase (optional, needs internet) ===== */
+const PUBKEY="halaqa3_pub"; /* separate key: never part of S, backups or exports */
+function pubCfg(){try{return JSON.parse(localStorage.getItem(PUBKEY)||"{}")||{}}catch(e){return{}}}
+function pubSave(o){try{localStorage.setItem(PUBKEY,JSON.stringify(o));return true}catch(e){toast("تعذّر الحفظ على هذا الجهاز");return false}}
+function pubUrl(v){v=(v||"").trim().replace(/\/+$/,"").replace(/\/rest\/v1$/,"");return(/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(v)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(v))?v:null}
+function pubKeyErr(k){k=(k||"").trim();if(!k)return"";if(/^sb_secret_/.test(k))return"هذا مفتاح سري (secret) ولا يوضع هنا أبداً. استخدم المفتاح العام فقط (anon public)";const p=k.split(".");if(p.length==3){try{const j=JSON.parse(atob(p[1].replace(/-/g,"+").replace(/_/g,"/")));if(j.role&&j.role!=="anon")return"هذا المفتاح دوره ("+j.role+") وليس anon. لا يوضع هنا. استخدم anon public فقط"}catch(e){return"المفتاح غير صالح"}}else if(!/^sb_publishable_/.test(k))return"صيغة المفتاح غير معروفة. استخدم anon public key";return""}
+const pubReady=c=>!!(pubUrl(c.url)&&c.key&&!pubKeyErr(c.key)&&c.pw);
+function pubSetCard(){const c=pubCfg(),ok=pubReady(c);
+ return'<div class="card"><b>☁️ نشر الأسبوع لأولياء الأمور (Supabase)</b><div class="mu">اختياري. التطبيق يعمل كاملاً بدون إنترنت وبدون هذه الإعدادات. تُحفظ هذه القيم على هذا الجهاز فقط، ولا تدخل النسخ الاحتياطية ولا التصدير. لا تضع هنا مفتاح service_role أو أي مفتاح سري.</div>'+
+ '<label>رابط المشروع (Project URL)</label><input dir="ltr" inputmode="url" autocomplete="off" placeholder="https://xxxx.supabase.co" data-c="pubu" value="'+esc(c.url||"")+'">'+
+ '<label>المفتاح العام (anon public key)</label><input dir="ltr" autocomplete="off" placeholder="eyJ... أو sb_publishable_..." data-c="pubk" value="'+esc(c.key||"")+'">'+
+ '<label>كلمة سر النشر (من اختيارك)</label><input type="password" dir="ltr" autocomplete="off" data-c="pubp" value="'+esc(c.pw||"")+'">'+
+ '<div class="mu" style="margin-top:8px">الحالة: '+(ok?"✅ الإعدادات كاملة":"⚠️ ناقصة")+"</div></div>"}
+C.pubu=el=>{const c=pubCfg(),v=el.value.trim();if(v&&!pubUrl(v)){toast("الرابط يجب أن يكون https://xxxx.supabase.co");el.value=c.url||"";return}c.url=v?pubUrl(v):"";if(pubSave(c)){toast("تم الحفظ");render(true)}};
+C.pubk=el=>{const c=pubCfg(),v=el.value.trim(),er=pubKeyErr(v);if(er){toast(er,null,6000);el.value=c.key||"";return}c.key=v;if(pubSave(c)){toast("تم الحفظ");render(true)}};
+C.pubp=el=>{const c=pubCfg();c.pw=el.value;if(pubSave(c)){toast("تم الحفظ");render(true)}};
+ICONS.portal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M17 5.5a3 3 0 0 1 0 5M18.5 14.8c1.7.7 2.8 2.3 3 5.2"/></svg>';
+/* ===== parent portal, phases 4+5: parent links (create / new link / revoke / children) and parent interactions ===== */
+async function tRpc(fn,args){const c=pubCfg();if(!pubReady(c))throw new Error("cfg");
+ const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);let r,j;
+ try{r=await fetch(pubUrl(c.url)+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(Object.assign({p_secret:c.pw},args||{})),signal:ctl.signal})}catch(e){clearTimeout(tm);throw new Error("net")}
+ clearTimeout(tm);j=await r.json().catch(()=>null);
+ if(!r.ok||!j||j.ok===false){const m=((j&&j.message)||"")+"";throw new Error(/forbidden/.test(m)?"pw":/Could not find the function|schema cache/i.test(m)?"nofn":"other")}
+ return j}
+function tErr(e){const m=e&&e.message;return m=="cfg"?"أكمل إعدادات النشر أولاً (أسفل هذه الصفحة)":m=="pw"?"كلمة سر النشر غير صحيحة":m=="net"?"تعذّر الاتصال بالإنترنت":m=="nofn"?"دالة ناقصة في قاعدة البيانات. نفّذ ملف SQL المحدّث":"تعذّر تنفيذ الطلب"}
+ui.par=ui.par||{list:null,busy:false,err:"",edit:null,sel:{},nw:null,nn:"",ns:{}};
+ui.int=ui.int||{key:"",data:null,busy:false,err:""};
+function firstName(s){return String(s.name||"").trim().split(/\s+/)[0]}
+function parLink(tok){return new URL("preview/parent.html",location.href).href.split("#")[0]+"#k="+tok}
+function stuPick(sel,att){const L=S.students.filter(s=>!s.arch);if(!L.length)return'<div class="mu">لا يوجد طلاب.</div>';
+ return L.map(s=>'<label class="flex" style="margin:2px 0;color:var(--tx);font-size:16px;font-weight:400"><input type="checkbox" data-c="'+att+'" data-id="'+s.id+'"'+(sel[s.id]?" checked":"")+"> "+esc(s.name)+"</label>").join("")}
+function kids(sel){return S.students.filter(s=>sel[s.id]).map(s=>({app_id:String(s.id),first_name:firstName(s),group_name:s.grp||null}))}
+async function parLoad(){const P=ui.par;if(P.busy)return;P.busy=true;P.err="";render(true);
+ try{const j=await tRpc("parent_list");P.list=j.parents||[]}catch(e){P.err=tErr(e);P.list=P.list||[]}
+ P.busy=false;render(true)}
+function parNewCard(){const n=ui.par.nw;if(!n)return"";
+ const msg="السلام عليكم ورحمة الله وبركاته. هذا رابطكم الخاص لمتابعة تقرير الحلقة: "+n.url+"\nالرابط خاص بكم فقط، فضلاً لا تشاركوه.";
+ return'<div class="card" style="border-color:var(--g);border-width:2px"><b>🔗 رابط '+esc(n.name)+'</b><div class="mu">يظهر هذا الرابط الآن فقط ولا يمكن عرضه لاحقاً (يُحفظ مشفّراً). انسخه أو أرسله الآن. إن ضاع اضغط «رابط جديد» وسيُلغى القديم.</div><input dir="ltr" readonly id="parurl" value="'+esc(n.url)+'" style="margin-top:8px"><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="parCopy">📋 نسخ الرابط</button><a class="btn s" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(msg)+'">واتساب</a><button type="button" class="btn s" data-a="parNwX">تم</button></div></div>'}
+function parCard(){const P=ui.par,c=pubCfg(),ok=pubReady(c);
+ if(!ok)return'<div class="card"><b>👨‍👩‍👧 روابط أولياء الأمور</b><div class="mu">أكمل إعدادات النشر أدناه (الرابط والمفتاح العام وكلمة السر) لتفعيل هذه الميزة.</div></div>';
+ if(P.list===null&&!P.busy)setTimeout(parLoad,0);
+ let h='<div class="card"><b>👨‍👩‍👧 روابط أولياء الأمور</b><div class="mu">لكل ولي أمر رابط خاص يرى فيه أبناءه فقط. الرابط دائم حتى تلغيه أنت.</div>';
+ h+='<label>اسم ولي الأمر (كما تكتبه، مثل: أبو أحمد)</label><input data-c="parnn" value="'+esc(P.nn)+'" maxlength="60"><label>أبناؤه</label>'+stuPick(P.ns,"parns")+'<button type="button" class="btn w" style="margin-top:8px" data-a="parAdd"'+(P.busy?" disabled":"")+">➕ إنشاء ولي أمر ورابطه</button></div>";
+ h+=parNewCard();
+ h+='<div class="card"><div class="flex" style="justify-content:space-between"><b>القائمة</b><button type="button" class="btn s" data-a="parRef"'+(P.busy?" disabled":"")+">"+(P.busy?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
+ if(P.err)h+='<div class="bar err">'+esc(P.err)+"</div>";
+ const L=P.list||[];if(!L.length&&!P.busy)h+='<div class="mu">لا يوجد أولياء أمور بعد.</div>';
+ L.forEach(p=>{const ch=(p.children||[]).map(x=>esc(x.first_name)).join("، ")||"لا أبناء مرتبطون";
+  const lv=p.last_viewed_at?(d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(p.last_viewed_at)):null;
+  h+='<div class="card" style="margin:8px 0;'+(p.revoked?"opacity:.75":"")+'"><div class="flex" style="justify-content:space-between"><b>'+esc(p.display_name)+"</b><span class='mu'>"+(p.revoked?"⛔ الرابط ملغى":"✅ فعّال")+"</span></div><div class='mu'>الأبناء: "+ch+"</div><div class='mu'>"+(lv?"آخر فتح: "+lv+" ("+p.views+" مرة)":"لم يفتح الرابط بعد")+"</div>";
+  if(P.edit===p.id){h+='<label>الأبناء المرتبطون</label>'+stuPick(P.sel,"parsel")+'<div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="parSave" data-id="'+p.id+'">حفظ</button><button type="button" class="btn s" data-a="parEditX">إلغاء</button></div>'}
+  else h+='<div class="flex" style="margin-top:8px"><button type="button" class="btn s" data-a="parNew" data-id="'+p.id+'">🔗 رابط جديد</button><button type="button" class="btn s" data-a="parEdit" data-id="'+p.id+'">👶 الأبناء</button>'+(p.revoked?"":'<button type="button" class="btn rd" data-a="parRev" data-id="'+p.id+'">إلغاء الرابط</button>')+'<button type="button" class="btn gh" data-a="parDel" data-id="'+p.id+'">🗑️ حذف</button></div>';
+  h+="</div>"});
+ return h+"</div>"}
+C.parnn=el=>{ui.par.nn=el.value};
+C.parns=el=>{ui.par.ns[el.dataset.id]=el.checked};
+C.parsel=el=>{ui.par.sel[el.dataset.id]=el.checked};
+A.parRef=()=>parLoad();
+A.parNwX=()=>{ui.par.nw=null;render(true)};
+A.parCopy=async()=>{const n=ui.par.nw;if(!n)return;try{await navigator.clipboard.writeText(n.url);toast("تم نسخ الرابط")}catch(e){const i=$("#parurl");if(i){i.focus();i.select()}toast("حدّد الرابط وانسخه يدوياً")}};
+A.parAdd=async()=>{const P=ui.par,ni=$('[data-c="parnn"]');if(ni)P.nn=ni.value;const nm=(P.nn||"").trim();if(!nm){toast("اكتب اسم ولي الأمر");return}if(P.busy)return;P.busy=true;render(true);
+ try{const j=await tRpc("parent_create",{p_display_name:nm,p_note:null});const k=kids(P.ns);if(k.length)await tRpc("parent_set_children",{p_parent_id:j.parent_id,p_children:k});
+  P.nw={name:nm,url:parLink(j.token)};P.nn="";P.ns={};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم إنشاء الرابط ✅",null,4000)}
+ catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true);setTimeout(()=>{const i=$("#parurl");if(i&&i.scrollIntoView)i.scrollIntoView({block:"center"})},50)};
+A.parNew=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
+ if(!confirm("إنشاء رابط جديد لـ "+p.display_name+"؟ الرابط القديم يتوقف فوراً."))return;P.busy=true;render(true);
+ try{const j=await tRpc("parent_renew_token",{p_parent_id:p.id});P.nw={name:p.display_name,url:parLink(j.token)};P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[]}
+ catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true)};
+A.parRev=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
+ if(!confirm("إلغاء رابط "+p.display_name+"؟ يتوقف فوراً ولا يستطيع فتح التقارير. يمكنك إنشاء رابط جديد لاحقاً."))return;P.busy=true;render(true);
+ try{await tRpc("parent_revoke",{p_parent_id:p.id});P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم إلغاء الرابط")}
+ catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true)};
+A.parDel=async el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p||P.busy)return;
+ if(!confirm("حذف "+p.display_name+" نهائياً مع تفاعلاته؟ لا يمكن التراجع. (الطلاب وتقاريرهم لا تُحذف)"))return;P.busy=true;render(true);
+ try{await tRpc("parent_delete",{p_parent_id:p.id});P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم الحذف")}
+ catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true)};
+A.parEdit=el=>{const P=ui.par,p=(P.list||[]).find(x=>x.id==el.dataset.id);if(!p)return;P.edit=p.id;P.sel={};(p.children||[]).forEach(x=>{P.sel[x.app_id]=true});render(true)};
+A.parEditX=()=>{ui.par.edit=null;render(true)};
+A.parSave=async el=>{const P=ui.par;if(P.busy)return;P.busy=true;render(true);
+ try{await tRpc("parent_set_children",{p_parent_id:el.dataset.id,p_children:kids(P.sel)});P.edit=null;P.busy=false;const l=await tRpc("parent_list");P.list=l.parents||[];toast("تم الحفظ")}
+ catch(e){P.busy=false;toast(tErr(e),null,5000)}render(true)};
+/* interactions of the selected week */
+async function intLoad(){const I=ui.int,[a]=wrange();if(I.busy)return;I.busy=true;I.err="";I.key=a;render(true);
+ try{const j=await tRpc("teacher_interactions",{p_week_start:a});I.data=j}catch(e){I.err=tErr(e);I.data=null}
+ I.busy=false;render(true)}
+function intCard(){const I=ui.int,c=pubCfg(),[a,b]=wrange();if(!pubReady(c))return"";
+ if(I.key!==a&&!I.busy)setTimeout(intLoad,0);
+ let h='<div class="card" id="intcard"><div class="flex" style="justify-content:space-between"><b>💬 تفاعلات الأهل (أسبوع '+dlab(a)+")</b><button type=\"button\" class=\"btn s\" data-a=\"intRef\""+(I.busy?" disabled":"")+">"+(I.busy?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
+ if(I.err)h+='<div class="bar err">'+esc(I.err)+"</div>";
+ const d=I.data;
+ if(d){const it=d.items||[],vw=d.views||[],hs=it.filter(x=>x.kind=="mashallah"),cm=it.filter(x=>x.kind=="comment");
+  h+='<div class="mu" style="margin:6px 0">❤️ '+hs.length+" ما شاء الله · 💬 "+cm.length+" تعليق · 👁️ "+vw.length+" فتح للتقرير</div>";
+  if(!it.length&&!vw.length)h+='<div class="mu">لا تفاعل لهذا الأسبوع بعد. تأكد أنك نشرت الأسبوع وأرسلت الروابط.</div>';
+  const when=s=>{const x=new Date(s);return x.getDate()+"/"+(x.getMonth()+1)+" "+String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
+  cm.forEach(x=>{h+='<div class="card" style="margin:6px 0"><b>💬 '+esc(x.parent)+"</b> <span class='mu'>عن "+esc(x.student)+(x.day_date?" · "+dlab(x.day_date):" · الأسبوع")+" · "+when(x.created_at)+'</span><div style="white-space:pre-wrap;margin-top:4px">'+esc(x.comment)+"</div></div>"});
+  hs.forEach(x=>{h+='<div style="margin:6px 0">❤️ <b>'+esc(x.parent)+"</b> <span class='mu'>ما شاء الله على "+esc(x.student)+(x.day_date?" · "+dlab(x.day_date):" · الأسبوع")+" · "+when(x.created_at)+"</span></div>"});
+  if(vw.length){h+='<div class="mu" style="margin-top:8px"><b>من فتح التقرير:</b></div>';vw.forEach(x=>{h+="<div class='mu'>👁️ "+esc(x.parent)+" ← "+esc(x.student)+" ("+x.view_count+" مرة، آخرها "+when(x.last_viewed_at)+")</div>"})}
+  const P=(ui.par.list||[]).filter(p=>!p.revoked),seen={};vw.forEach(x=>{seen[x.parent+"|"+x.student_app_id]=1});
+  const miss=[];P.forEach(p=>(p.children||[]).forEach(ch=>{if(!seen[p.display_name+"|"+ch.app_id])miss.push(p.display_name+" ("+ch.first_name+")")}));
+  if(miss.length)h+='<div class="mu" style="margin-top:8px"><b>لم يفتح بعد:</b> '+miss.map(esc).join("، ")+"</div>"}
+ return h+"</div>"}
+A.intRef=()=>intLoad();
+/* ===== parent portal, phase 8: teacher dashboard (who opened, 14 days, pending requests, reminders). No new server code: uses parent_list + teacher_interactions ===== */
+const DONEKEY="halaqa3_done"; /* local only: comments the teacher marked as handled */
+function dashDone(){try{return JSON.parse(localStorage.getItem(DONEKEY)||"{}")||{}}catch(e){return{}}}
+function dashDays(s){return s?Math.max(0,Math.floor((Date.now()-new Date(s).getTime())/864e5)):null}
+function dashAgo(n){return n==null?"لم يفتح بعد":n==0?"اليوم":n==1?"أمس":n==2?"قبل يومين":n<=10?"قبل "+n+" أيام":"قبل "+n+" يوماً"}
+function dashMsg(p){const n=dashDays(p.last_viewed_at),ch=(p.children||[]).map(x=>x.first_name).join(" و"),nw=ui.par.nw;
+ let m="السلام عليكم ورحمة الله وبركاته، "+p.display_name+".\nنذكّركم بمتابعة تقرير الحلقة الأسبوعي"+(ch?" لـ"+ch:"")+". ";
+ m+=n==null?"لم يُفتح الرابط بعد.":"آخر مرة فُتح فيها التقرير كانت "+dashAgo(n)+".";
+ if(nw&&nw.name==p.display_name&&nw.url)m+="\nرابط التقرير: "+nw.url;
+ return m+"\nجزاكم الله خيراً، ونسأل الله أن يبارك في أبنائكم."}
+function dashCard(){const c=pubCfg();if(!pubReady(c))return"";const P=ui.par,I=ui.int,L=(P.list||[]).filter(p=>!p.revoked);
+ if(P.list===null&&!P.busy)setTimeout(parLoad,0);
+ let h='<div class="card" id="dashcard" style="border-color:var(--g);border-width:2px"><div class="flex" style="justify-content:space-between"><b>📊 لوحة المعلم</b><button type="button" class="btn s" data-a="dashRef"'+((P.busy||I.busy)?" disabled":"")+">"+((P.busy||I.busy)?"جاري التحميل...":"🔄 تحديث")+"</button></div>";
+ if(P.err)h+='<div class="bar err">'+esc(P.err)+"</div>";
+ if(P.list===null){return h+'<div class="mu">جاري التحميل...</div></div>'}
+ const opened=L.filter(p=>p.last_viewed_at).sort((a,b)=>new Date(b.last_viewed_at)-new Date(a.last_viewed_at)),
+  stale=L.filter(p=>!p.last_viewed_at||dashDays(p.last_viewed_at)>=14).sort((a,b)=>(a.last_viewed_at?new Date(a.last_viewed_at).getTime():0)-(b.last_viewed_at?new Date(b.last_viewed_at).getTime():0)),
+  rem=stale.filter(p=>(p.children||[]).length),done=dashDone(),
+  cm=((I.data&&I.data.items)||[]).filter(x=>x.kind=="comment"),pend=cm.filter(x=>!done[x.id]);
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0"><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">👁️ فتحوا: '+opened.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">⏳ متأخرون 14 يوماً: '+stale.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">💬 طلبات معلقة: '+pend.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">🔔 يحتاج تذكير: '+rem.length+"</span></div>";
+ h+='<div class="mu"><b>١) من فتح التقرير</b></div>';
+ if(!opened.length)h+='<div class="mu">لم يفتح أحد التقرير بعد.</div>';
+ opened.forEach(p=>{const n=dashDays(p.last_viewed_at);h+='<div style="margin:4px 0">✅ <b>'+esc(p.display_name)+"</b> <span class='mu'>· آخر فتح: "+dashAgo(n)+" · "+p.views+" مرة</span></div>"});
+ h+='<div class="mu" style="margin-top:10px"><b>٢) لم يفتح منذ 14 يوماً أو أكثر</b></div>';
+ if(!stale.length)h+='<div class="mu">🎉 الجميع فتح التقرير خلال آخر 14 يوماً.</div>';
+ stale.forEach(p=>{const n=dashDays(p.last_viewed_at);h+='<div style="margin:4px 0">⚠️ <b>'+esc(p.display_name)+"</b> <span class='mu'>· "+(n==null?"لم يفتح الرابط أبداً":"آخر فتح قبل "+n+" يوماً")+"</span></div>"});
+ h+='<div class="mu" style="margin-top:10px"><b>٣) الطلبات المعلقة</b> (تعليقات الأهل على الأسبوع المختار)</div>';
+ if(I.err)h+='<div class="bar err">'+esc(I.err)+"</div>";
+ if(!I.data&&!I.err)h+='<div class="mu">جاري التحميل...</div>';
+ else if(!pend.length)h+='<div class="mu">لا توجد طلبات معلقة'+(cm.length?" (تمت معالجة "+cm.length+")":"")+".</div>";
+ pend.forEach(x=>{h+='<div class="card" style="margin:6px 0"><b>💬 '+esc(x.parent)+"</b> <span class='mu'>عن "+esc(x.student)+'</span><div style="white-space:pre-wrap;margin-top:4px">'+esc(x.comment)+'</div><button type="button" class="btn s" style="margin-top:6px" data-a="dashDone" data-id="'+esc(x.id)+'">✔️ تمت المعالجة</button></div>'});
+ if(cm.length||pend.length)h+='<div style="margin-top:4px"><button type="button" class="btn s" data-a="dashInbox">💬 فتح تفاعلات الأهل كاملة</button></div>';
+ h+='<div class="mu" style="margin-top:10px"><b>٤) يحتاج تذكير</b> (لم يفتح منذ 14 يوماً أو أكثر)</div>';
+ if(!rem.length)h+='<div class="mu">لا أحد يحتاج تذكيراً الآن.</div>';
+ else h+='<div class="mu">انسخ الرسالة أو افتح واتساب ثم اختر ولي الأمر. لا تُحفظ أرقام الهواتف في التطبيق.</div>';
+ rem.forEach(p=>{const m=dashMsg(p);h+='<div class="card" style="margin:6px 0"><b>🔔 '+esc(p.display_name)+'</b><div style="white-space:pre-wrap;margin-top:6px;background:var(--gl);border-radius:10px;padding:8px;font-size:15px">'+esc(m)+'</div><div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="dashCopy" data-id="'+esc(p.id)+'">📋 نسخ الرسالة</button><a class="btn s" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m)+'">واتساب</a></div></div>'});
+ return h+"</div>"}
+A.dashRef=async()=>{await parLoad();await intLoad()};
+A.dashDone=el=>{const d=dashDone();d[el.dataset.id]=Date.now();try{localStorage.setItem(DONEKEY,JSON.stringify(d))}catch(e){toast("تعذّر الحفظ على هذا الجهاز");return}toast("تم");render(true)};
+A.dashInbox=()=>{const e=$("#intcard");if(e&&e.scrollIntoView)e.scrollIntoView({behavior:"smooth",block:"start"})};
+A.dashCopy=async el=>{const p=(ui.par.list||[]).find(x=>x.id==el.dataset.id);if(!p)return;const m=dashMsg(p);try{await navigator.clipboard.writeText(m);toast("تم نسخ الرسالة")}catch(e){const t=document.createElement("textarea");t.value=m;document.body.appendChild(t);t.select();try{document.execCommand("copy");toast("تم نسخ الرسالة")}catch(e2){toast("تعذّر النسخ")}t.remove()}};
+function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();return weekNav()+dashCard()+pubCard()+intCard()+parCard()+pubSetCard()}
+function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
+/* top students of the week for the parent page: exactly what the honor board (لوحة الشرف) shows */
+function pubHonor(a){try{const d=dOf(a);d.setHours(12,0,0,0);const off=Math.round((d-wkStartOf(new Date()))/6048e5),H=honor(off);if(H.ks[0]!==a)return null;
+ const top3=act().map(s=>({n:String(s.name||""),s:st(s.id,H.ks)})).filter(r=>r.s.t>0).map(r=>({n:r.n,h:+r.s.h||0,r:+r.s.r||0,t:+r.s.t||0,rate:+r.s.rate||0,p:Math.round((2*(+r.s.h||0)+(+r.s.r||0)+(+r.s.t||0))*10)/10})).sort((x,y)=>y.p-x.p||y.h-x.h||y.rate-x.rate).slice(0,3).map(r=>({n:r.n,h:r.h,r:r.r,t:r.t,p:r.p}));
+ return{hf:H.hf.map(r=>({n:String(r.n||""),h:+r.s.h||0})),cm:H.cm.map(r=>({n:String(r.n||""),rate:+r.s.rate||0,t:+r.s.t||0})),top3}}catch(e){return null}}
+function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
+ const stm={"سمّع":"heard","لم يسمّع":"not_heard","لم يسمّع (معذور)":"excused","غائب":"absent","إجازة":"off"};
+ return{week_start:a,week_end:b,honor:pubHonor(a),students:weekRoster().map(s=>{const D=pwData(s.id),G=goalOf(s.id);let pr=0,ab=0,ex=0;
+  const days=[];D.days.forEach((y,i)=>{if(y.none)return;const st=stm[y.st];if(!st)return;if(st=="heard")pr++;else if(st=="absent")ab++;else if(st=="excused")ex++;
+   days.push({day_date:ks[i],status:st,items:y.it.filter(x=>!x.ex).map(x=>({name:x.nm,ay:x.ay||null,pages:x.pg||0,type:x.ty=="مراجعة"?"review":x.ty=="حفظ جديد"?"hifz":null})),note:y.nt||null})});
+  return{app_id:String(s.id),first_name:String(s.name||"").trim().split(/\s+/)[0],group_name:s.grp||null,
+   goal_pages:G.pg>0?G.pg:null,goal_type:G.pg>0?G.type:null,achieved_pages:G.pg>0?D.ac:null,hifz_pages:D.hp,review_pages:D.rp,
+   present_days:pr,absent_days:ab,excused_days:ex,rating:D.sc!=null?D.sc:null,teacher_note:D.tn||null,days}})}}
+function pubCard(){const c=pubCfg(),[a]=wrange(),l=(c.last||{})[a];
+ return'<div class="card"><b>☁️ نشر الأسبوع</b><div class="mu">يرفع ملخصاً أسبوعياً لكل طالب فقط (الأيام، ما سمّعه، الصفحات، الحضور والغياب، الهدف والمنجز، التقييم، ملاحظتك). لا يحذف شيئاً من بياناتك.'+(l?"<br>آخر نشر لهذا الأسبوع: "+esc((d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(l.t)))+" ("+l.n+" طالب). عدّلت شيئاً بعده؟ انشر مرة أخرى فيتحدّث.":"")+'</div><button type="button" class="btn w" style="margin-top:8px" data-a="pubGo"'+(ui.pubBusy?" disabled":"")+">"+(ui.pubBusy?"جاري النشر...":"☁️ نشر الأسبوع")+"</button></div>"}
+function pubErr(r,j){const m=((j&&(j.message||j.error||j.msg))||"")+"";
+ if(/forbidden/.test(m))return"كلمة سر النشر غير صحيحة";
+ if(r.status==401||r.status==403||/api key|JWT|apikey/i.test(m))return"المفتاح العام غير صحيح أو غير مسموح";
+ if(r.status==404||/Could not find the function|schema cache/i.test(m))return"دالة publish_week غير موجودة في قاعدة البيانات. نفّذ ملف SQL أولاً";
+ return"تعذّر النشر ("+r.status+")"}
+A.pubGo=async()=>{if(ui.pubBusy)return;const c=pubCfg();
+ if(!pubReady(c)){toast("أكمل إعدادات النشر من تبويب الإعدادات أولاً",null,4500);return}
+ if(navigator.onLine===false){toast("لا يوجد إنترنت الآن. لم يُنشر شيء، وتطبيقك يعمل كالمعتاد. انشر لاحقاً",null,5000);return}
+ const P=pubPayload();if(!P.students.length){toast("لا يوجد طلاب في هذا الأسبوع");return}
+ if(!confirm("نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء الأولى فقط كما يلي:\n"+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
+ ui.pubBusy=true;render(true);
+ try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);
+  const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
+  const r=await fetch(pubUrl(c.url)+"/rest/v1/rpc/publish_week",{method:"POST",headers:h,body:JSON.stringify({p_secret:c.pw,p_payload:P}),signal:ctl.signal});clearTimeout(tm);
+  const j=await r.json().catch(()=>null);
+  if(r.ok&&j&&j.ok){const c2=pubCfg();c2.last=c2.last||{};c2.last[P.week_start]={t:Date.now(),n:j.published};pubSave(c2);toast("تم نشر "+j.published+" طالب ✅",null,4500)}
+  else toast(pubErr(r,j),null,6000)}
+ catch(e){toast(e&&e.name=="AbortError"?"انتهت المهلة. لم يتأكد النشر، حاول مرة أخرى":"تعذّر الاتصال بالإنترنت أو بالمشروع. لم يُنشر شيء",null,5000)}
+ ui.pubBusy=false;render(true)};
 
 /* ---- parent monthly report ---- */
 function repHtml(id,mk,msg){const s=stu(id),n=s.name,g=s.grp,keys=moKeys(mk),st_=mst(id,mk),p1=posTxt(id,1),p2=posTxt(id,2),ex=[];
