@@ -1108,7 +1108,7 @@ function pubSetCard(){const c=pubCfg(),ok=pubReady(c);
  '<label>كلمة سر النشر (من اختيارك)</label><input type="password" dir="ltr" autocomplete="off" data-c="pubp" value="'+esc(c.pw||"")+'">'+
  '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #ddd"><b>🔐 كلمة سر نشر خاصة بي (لكل محفظ)</b><div class="mu">إذا كان أكثر من محفظ يستخدمون نفس الرابط، فلكل محفظ كلمة سر نشر خاصة تفصل طلابه وأولياء أمره عن بقية المحفظين. للتسجيل أول مرة: اكتب كلمة سرك الجديدة مرتين واضغط «إنشاء حسابي». تُستخدم كلمة سر النشر المحفوظة أعلاه تلقائياً كرمز دعوة، وبعد التسجيل تُحفظ كلمة سرك الجديدة مكانها.</div>'+
  '<label>الاسم (اختياري)</label><input id="pr_nm" autocomplete="off">'+
- '<label>رمز الدعوة (اتركه فارغاً: تُستخدم كلمة سر النشر المحفوظة أعلاه)</label><input id="pr_code" type="password" dir="ltr" autocomplete="off">'+
+ '<label>رمز الدعوة (اتركه فارغاً: تُستخدم كلمة سر النشر المحفوظة أعلاه)</label><input id="pr_code" type="password" dir="ltr" autocomplete="off" value="'+esc(window.JOINCODE||"")+'">'+
  '<label>كلمة سري الجديدة (8 أحرف أو أكثر)</label><input id="pr_n1" type="password" dir="ltr" autocomplete="new-password">'+
  '<label>تأكيد كلمة السر الجديدة</label><input id="pr_n2" type="password" dir="ltr" autocomplete="new-password">'+
  '<div style="margin-top:8px"><button type="button" class="btn" data-a="pubReg">إنشاء حسابي كمحفظ</button> <button type="button" class="btn s" data-a="pubChg">تغيير كلمة سري الحالية</button> <button type="button" class="btn s" data-a="pubEye">👁 إظهار / إخفاء كلمات السر</button></div></div>'+
@@ -1127,10 +1127,11 @@ function pubRegErr(e){const m=e&&e.message;return({cfg:"أكمل الرابط و
 function pubNewPw(){const n1=($("#pr_n1")||{}).value||"",n2=($("#pr_n2")||{}).value||"";if(n1.length<8){toast("كلمة السر الجديدة يجب أن تكون 8 أحرف على الأقل");return null}if(n1!==n2){toast("كلمتا السر غير متطابقتين");return null}return n1}
 A.pubReg=async()=>{const n1=pubNewPw();if(!n1)return;const code=(($("#pr_code")||{}).value||"")||pubCfg().pw||"";if(!code){toast("اكتب رمز الدعوة في خانته");return}
  if(!confirm("إنشاء حساب محفظ جديد بكلمة سر خاصة؟ طلابك سيُنشرون في حسابك أنت فقط. احفظ كلمة السر الجديدة جيداً."))return;
- try{await pubRaw("teacher_register",{p_code:code,p_new_secret:n1,p_name:($("#pr_nm")||{}).value||null});const c=pubCfg();c.pw=n1;pubSave(c);toast("تم إنشاء حسابك ✅ كلمة سر النشر صارت الجديدة",null,5000);render(true)}catch(e){toast(pubRegErr(e),null,6000)}};
+ try{await pubRaw("teacher_register",{p_code:code,p_new_secret:n1,p_name:($("#pr_nm")||{}).value||null});const c=pubCfg();c.pw=n1;pubSave(c);window.JOINCODE="";toast("تم إنشاء حسابك ✅ كلمة سر النشر صارت الجديدة",null,5000);render(true)}catch(e){toast(pubRegErr(e),null,6000)}};
 A.pubEye=()=>{document.querySelectorAll('[data-c="pubp"],#pr_code,#pr_n1,#pr_n2').forEach(e=>{e.type=e.type==="password"?"text":"password"})};
 A.pubChg=async()=>{const n1=pubNewPw();if(!n1)return;
  try{await tRpc("teacher_change_secret",{p_new_secret:n1});const c=pubCfg();c.pw=n1;pubSave(c);toast("تم تغيير كلمة السر ✅",null,5000);render(true)}catch(e){toast(e&&e.message=="other"?"سجّل حسابك الجديد أولاً (الحساب المشترك لا يمكن تغيير كلمة سره)":(e&&e.message=="pw"?pubRegErr(e):tErr(e)),null,6000)}};
+try{const h=location.hash||"";if(h.indexOf("#join")===0){const q=new URLSearchParams(h.replace(/^#join&?/,""));const cd=(q.get("c")||"").trim(),u=pubUrl(q.get("u")||""),k=(q.get("k")||"").trim();const cf=pubCfg();if(!cf.url&&u)cf.url=u;if(!cf.key&&k&&!pubKeyErr(k))cf.key=k;pubSave(cf);window.JOINCODE=cd;ui.tab="portal";history.replaceState(null,"",location.pathname+location.search)}}catch(e){}
 ICONS.portal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M17 5.5a3 3 0 0 1 0 5M18.5 14.8c1.7.7 2.8 2.3 3 5.2"/></svg>';
 /* ===== parent portal, phases 4+5: parent links (create / new link / revoke / children) and parent interactions ===== */
 async function tRpc(fn,args){const c=pubCfg();if(!pubReady(c))throw new Error("cfg");
