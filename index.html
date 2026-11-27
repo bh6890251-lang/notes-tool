@@ -1106,10 +1106,30 @@ function pubSetCard(){const c=pubCfg(),ok=pubReady(c);
  '<label>رابط المشروع (Project URL)</label><input dir="ltr" inputmode="url" autocomplete="off" placeholder="https://xxxx.supabase.co" data-c="pubu" value="'+esc(c.url||"")+'">'+
  '<label>المفتاح العام (anon public key)</label><input dir="ltr" autocomplete="off" placeholder="eyJ... أو sb_publishable_..." data-c="pubk" value="'+esc(c.key||"")+'">'+
  '<label>كلمة سر النشر (من اختيارك)</label><input type="password" dir="ltr" autocomplete="off" data-c="pubp" value="'+esc(c.pw||"")+'">'+
+ '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #ddd"><b>🔐 كلمة سر نشر خاصة بي (لكل محفظ)</b><div class="mu">إذا كان أكثر من محفظ يستخدمون نفس الرابط، فلكل محفظ كلمة سر نشر خاصة تفصل طلابه وأولياء أمره عن بقية المحفظين. للتسجيل أول مرة: اكتب كلمة السر المشتركة القديمة (كرمز دعوة) ثم اختر كلمة سرك الجديدة. بعد التسجيل تُحفظ كلمة سرك في الخانة أعلاه تلقائياً.</div>'+
+ '<label>الاسم (اختياري)</label><input id="pr_nm" autocomplete="off">'+
+ '<label>كلمة السر المشتركة القديمة (رمز الدعوة)</label><input id="pr_code" type="password" dir="ltr" autocomplete="off">'+
+ '<label>كلمة سري الجديدة (8 أحرف أو أكثر)</label><input id="pr_n1" type="password" dir="ltr" autocomplete="new-password">'+
+ '<label>تأكيد كلمة السر الجديدة</label><input id="pr_n2" type="password" dir="ltr" autocomplete="new-password">'+
+ '<div style="margin-top:8px"><button type="button" class="btn" data-a="pubReg">إنشاء حسابي كمحفظ</button> <button type="button" class="btn s" data-a="pubChg">تغيير كلمة سري الحالية</button></div></div>'+
  '<div class="mu" style="margin-top:8px">الحالة: '+(ok?"✅ الإعدادات كاملة":"⚠️ ناقصة")+"</div></div>"}
 C.pubu=el=>{const c=pubCfg(),v=el.value.trim();if(v&&!pubUrl(v)){toast("الرابط يجب أن يكون https://xxxx.supabase.co");el.value=c.url||"";return}c.url=v?pubUrl(v):"";if(pubSave(c)){toast("تم الحفظ");render(true)}};
 C.pubk=el=>{const c=pubCfg(),v=el.value.trim(),er=pubKeyErr(v);if(er){toast(er,null,6000);el.value=c.key||"";return}c.key=v;if(pubSave(c)){toast("تم الحفظ");render(true)}};
 C.pubp=el=>{const c=pubCfg();c.pw=el.value;if(pubSave(c)){toast("تم الحفظ");render(true)}};
+async function pubRaw(fn,args){const c=pubCfg();if(!(pubUrl(c.url)&&c.key&&!pubKeyErr(c.key)))throw new Error("cfg");
+ const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
+ const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);let r,j;
+ try{r=await fetch(pubUrl(c.url)+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(args),signal:ctl.signal})}catch(e){clearTimeout(tm);throw new Error("net")}
+ clearTimeout(tm);j=await r.json().catch(()=>null);
+ if(!r.ok||!j||j.ok===false){const m=((j&&j.message)||"")+"";throw new Error(/bad_code/.test(m)?"code":/weak_secret/.test(m)?"weak":/secret_taken/.test(m)?"taken":/rate_limited/.test(m)?"rate":/legacy_account/.test(m)?"legacy":/forbidden/.test(m)?"pw":/Could not find the function|schema cache/i.test(m)?"nofn":"other")}
+ return j}
+function pubRegErr(e){const m=e&&e.message;return({cfg:"أكمل الرابط والمفتاح العام أولاً",code:"الكلمة المشتركة القديمة (رمز الدعوة) غير صحيحة",weak:"كلمة السر الجديدة يجب أن تكون 8 أحرف على الأقل",taken:"اختر كلمة سر أخرى، هذه غير متاحة",rate:"محاولات كثيرة. انتظر 10 دقائق",legacy:"هذا الحساب مشترك. سجّل حسابك الجديد أولاً بالزر الأول",pw:"كلمة سر النشر الحالية غير صحيحة",net:"تعذّر الاتصال بالإنترنت",nofn:"قاعدة البيانات تحتاج تحديث"})[m]||"تعذّر تنفيذ الطلب"}
+function pubNewPw(){const n1=($("#pr_n1")||{}).value||"",n2=($("#pr_n2")||{}).value||"";if(n1.length<8){toast("كلمة السر الجديدة يجب أن تكون 8 أحرف على الأقل");return null}if(n1!==n2){toast("كلمتا السر غير متطابقتين");return null}return n1}
+A.pubReg=async()=>{const n1=pubNewPw();if(!n1)return;const code=($("#pr_code")||{}).value||"";if(!code){toast("اكتب كلمة السر المشتركة القديمة");return}
+ if(!confirm("إنشاء حساب محفظ جديد بكلمة سر خاصة؟ طلابك سيُنشرون في حسابك أنت فقط. احفظ كلمة السر الجديدة جيداً."))return;
+ try{await pubRaw("teacher_register",{p_code:code,p_new_secret:n1,p_name:($("#pr_nm")||{}).value||null});const c=pubCfg();c.pw=n1;pubSave(c);toast("تم إنشاء حسابك ✅ كلمة سر النشر صارت الجديدة",null,5000);render(true)}catch(e){toast(pubRegErr(e),null,6000)}};
+A.pubChg=async()=>{const n1=pubNewPw();if(!n1)return;
+ try{await tRpc("teacher_change_secret",{p_new_secret:n1});const c=pubCfg();c.pw=n1;pubSave(c);toast("تم تغيير كلمة السر ✅",null,5000);render(true)}catch(e){toast(e&&e.message=="other"?"سجّل حسابك الجديد أولاً (الحساب المشترك لا يمكن تغيير كلمة سره)":(e&&e.message=="pw"?pubRegErr(e):tErr(e)),null,6000)}};
 ICONS.portal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M17 5.5a3 3 0 0 1 0 5M18.5 14.8c1.7.7 2.8 2.3 3 5.2"/></svg>';
 /* ===== parent portal, phases 4+5: parent links (create / new link / revoke / children) and parent interactions ===== */
 async function tRpc(fn,args){const c=pubCfg();if(!pubReady(c))throw new Error("cfg");
