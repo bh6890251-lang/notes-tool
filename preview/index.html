@@ -1241,7 +1241,7 @@ function dashCard(){const c=pubCfg();if(!pubReady(c))return"";const P=ui.par,I=u
   stale=L.filter(p=>!p.last_viewed_at||dashDays(p.last_viewed_at)>=14).sort((a,b)=>(a.last_viewed_at?new Date(a.last_viewed_at).getTime():0)-(b.last_viewed_at?new Date(b.last_viewed_at).getTime():0)),
   rem=stale.filter(p=>(p.children||[]).length),done=dashDone(),
   cm=((I.data&&I.data.items)||[]).filter(x=>x.kind=="comment"),pend=cm.filter(x=>!done[x.id]);
- h+='<div class="flex" style="gap:6px;flex-wrap:wrap;margin:8px 0"><span class="chip">👁️ فتحوا: '+opened.length+'</span><span class="chip">⏳ لم يفتحوا منذ 14 يوماً: '+stale.length+'</span><span class="chip">💬 طلبات معلقة: '+pend.length+'</span><span class="chip">🔔 يحتاج تذكير: '+rem.length+"</span></div>";
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0"><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">👁️ فتحوا: '+opened.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">⏳ متأخرون 14 يوماً: '+stale.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">💬 طلبات معلقة: '+pend.length+'</span><span style="background:var(--gl);border-radius:10px;padding:6px 8px;font-size:14px;font-weight:600">🔔 يحتاج تذكير: '+rem.length+"</span></div>";
  h+='<div class="mu"><b>١) من فتح التقرير</b></div>';
  if(!opened.length)h+='<div class="mu">لم يفتح أحد التقرير بعد.</div>';
  opened.forEach(p=>{const n=dashDays(p.last_viewed_at);h+='<div style="margin:4px 0">✅ <b>'+esc(p.display_name)+"</b> <span class='mu'>· آخر فتح: "+dashAgo(n)+" · "+p.views+" مرة</span></div>"});
