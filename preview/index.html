@@ -919,16 +919,17 @@ A.alSaveD=async el=>{const id=el.dataset.id,v=($("#ald-"+id)||{}).value;try{awai
 A.alSend=async el=>{const id=el.dataset.id,v=($("#ald-"+id)||{}).value;const ok=await confirmReal("إرسال الرسالة","ستظهر هذه الرسالة لولي أمر هذا الطالب فقط داخل تطبيق الأولياء. متابعة؟","إرسال",false);if(!ok)return;
  try{await tRpc("teacher_alert_save",{p_student_app_id:"",p_kind:"",p_message:v,p_id:id});await tRpc("teacher_alert_send",{p_id:id});toast("أُرسلت الرسالة ✅");await alLoad()}catch(e){toast(tErr(e),null,5000)}};
 A.alDis=async el=>{try{await tRpc("teacher_alert_dismiss",{p_id:el.dataset.id});await alLoad()}catch(e){toast(tErr(e),null,5000)}};
-ui.mp=ui.mp||{m:"",st:null,busy:false,err:"",cons:false,key:""};
-async function mpLoad(){const M=ui.mp;if(M.busy)return;M.busy=true;M.err="";M.key=M.m;render(true);try{const j=await tRpc("teacher_month_status",{p_month:M.m});M.st=j;M.cons=!!j.consent_full}catch(e){M.err=tErr(e);M.st=null}M.busy=false;render(true)}
+ui.mp=ui.mp||{m:"",st:null,busy:false,err:"",cons:false,rev:false,key:""};
+async function mpLoad(){const M=ui.mp;if(M.busy)return;M.busy=true;M.err="";M.key=M.m;render(true);try{const j=await tRpc("teacher_month_status",{p_month:M.m});M.st=j;M.cons=!!j.consent_full;M.rev=!!j.show_review}catch(e){M.err=tErr(e);M.st=null}M.busy=false;render(true)}
 function mpCard(){const c=pubCfg();if(!pubReady(c))return"";const M=ui.mp;if(!M.m)M.m=todayK().slice(0,7);if(M.key!==M.m&&!M.busy)setTimeout(mpLoad,0);
  return'<div class="card"><b>📅 نشر التقرير الشهري</b><div class="mu">يظهر لأولياء الأمور تبويب «الحلقة» (لوحة الشرف، مجموع الصفحات، متوسط الحضور) بالإيجابيات فقط. التقرير الخاص بكل طالب يُحسب من الأسابيع المنشورة.</div><label>الشهر</label><input type="month" value="'+M.m+'" data-c="mpm">'+
  '<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" data-c="mpc"'+(M.cons?" checked":"")+'> أؤكد وجود موافقة خطية من أولياء الأمور لعرض جدول الأسماء الأولى</label>'+
+ '<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" data-c="mpr"'+(M.rev?" checked":"")+'> أوافق على إظهار بطاقة «المراجعة» لأولياء الأمور (مخفية افتراضياً)</label>'+
  (M.st?'<div class="mu" style="margin-top:6px">'+(M.st.published?"✅ منشور"+(M.st.consent_full?" (مع جدول الأسماء الأولى)":" (إيجابيات فقط)"):"غير منشور بعد")+'</div>':"")+(M.err?'<div class="bar err">'+esc(M.err)+'</div>':"")+
  '<div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="mpPub"'+(M.busy?" disabled":"")+'>📤 نشر الشهر</button>'+(M.st&&M.st.published?'<button type="button" class="btn s" data-a="mpUn">إلغاء النشر</button>':"")+'</div></div>'}
-C.mpm=el=>{ui.mp.m=el.value||ui.mp.m;ui.mp.key="";render(true)};C.mpc=el=>{ui.mp.cons=el.checked};
-A.mpPub=async()=>{const M=ui.mp;if(!M.m)return;const ok=await confirmReal("نشر تقرير الشهر","سيظهر تقرير الحلقة العام لشهر "+M.m+" لأولياء الأمور"+(M.cons?" مع جدول الأسماء الأولى (بعد تأكيدك لموافقتهم الخطية)":" بالإيجابيات فقط")+". متابعة؟","نشر",false);if(!ok)return;
- try{await tRpc("teacher_publish_month",{p_month:M.m,p_consent_full:!!M.cons});toast("تم نشر تقرير الشهر ✅");await mpLoad()}catch(e){toast(tErr(e),null,5000)}};
+C.mpm=el=>{ui.mp.m=el.value||ui.mp.m;ui.mp.key="";render(true)};C.mpc=el=>{ui.mp.cons=el.checked};C.mpr=el=>{ui.mp.rev=el.checked};
+A.mpPub=async()=>{const M=ui.mp;if(!M.m)return;const ok=await confirmReal("نشر تقرير الشهر","سيظهر تقرير الحلقة العام لشهر "+M.m+" لأولياء الأمور"+(M.cons?" مع جدول الأسماء الأولى (بعد تأكيدك لموافقتهم الخطية)":" بالإيجابيات فقط")+(M.rev?"، مع بطاقة المراجعة":"، بدون بطاقة المراجعة")+". متابعة؟","نشر",false);if(!ok)return;
+ try{await tRpc("teacher_publish_month",{p_month:M.m,p_consent_full:!!M.cons,p_show_review:!!M.rev});toast("تم نشر تقرير الشهر ✅");await mpLoad()}catch(e){toast(tErr(e),null,5000)}};
 A.mpUn=async()=>{const M=ui.mp;try{await tRpc("teacher_unpublish_month",{p_month:M.m});toast("أُلغي النشر");await mpLoad()}catch(e){toast(tErr(e),null,5000)}};
 C.alc=el=>{const v=Math.max(1,Math.round(+el.value)||1);cfgA()[el.dataset.f]=v;sv();render()};
 
