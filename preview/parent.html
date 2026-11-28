@@ -274,7 +274,7 @@ function obPending(sid,week,day,kind){return obGet().filter(x=>x.sid==sid&&x.wee
 let OBBUSY=false;
 async function obFlush(){if(OBBUSY||navigator.onLine===false||!TOKEN)return;OBBUSY=true;let sent=0;
  try{for(const it of obGet()){
-  try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:it.sid,p_week_start:it.week,p_day_date:it.day||null,p_kind:it.kind,p_comment:it.comment||null});sent++}
+  try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:it.sid,p_week_start:it.week,p_day_date:it.day||null,p_kind:it.kind,p_comment:it.comment||null,p_client_id:String(it.id).slice(0,60)});sent++}
   catch(e){if(e&&e.code=="already_reacted"){}else if(e&&(e.code=="net"||e.code=="other"))break;else if(e&&["bad_token","revoked","expired"].includes(e.code))break}
   obSet(obGet().filter(x=>x.id!==it.id))}}
  finally{OBBUSY=false}
