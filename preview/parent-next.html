@@ -353,7 +353,7 @@ function autoOpen(){
  const t=fd(new Date());let d=ds.find(x=>x.day_date==t&&x.status!="off")||ds.find(x=>x.status=="heard"||(x.items||[]).length)||ds[0];
  if(d)ST.open[d.day_date]=1}
 /* ===== NEXT: monthly report (private), general monthly report, follow-up level + alerts. Reads only through token-checked server functions. ===== */
-const FU_ON=false; /* follow-up level + alerts stay hidden until the teacher approves the thresholds */
+const FU_ON=true; /* follow-up level + alerts stay hidden until the teacher approves the thresholds */
 const LV={plan:[100,70],att:[90,75],rev:1}; /* proposed thresholds, shown to the teacher for approval: plan % (excellent/good), attendance % (excellent/good), review pages per memorized page */
 ST.tab="wk";ST.mon=null;ST.mo={};ST.gen={};ST.al=null;ST.dlb=false;
 const MD={},GD={};
@@ -400,8 +400,8 @@ async function loadGen(){if(GD[ST.mon]){ST.moBusy=false;return draw()}
  try{GD[ST.mon]=await rpc("parent_month_general",{p_token:TOKEN,p_month:ST.mon})}catch(e){ST.moErr=e&&e.code=="other"&&e.status==404?"هذه الميزة ستتوفر قريباً.":fail(e)}
  ST.moBusy=false;draw()}
 async function probeGen(){if(nf("parent_month_general")){ST.genOk=false;return}try{await rpc("parent_month_general",{p_token:TOKEN,p_month:curMon()});ST.genOk=true}catch(e){ST.genOk=(e&&e.code=="other"&&e.status==404)?false:ST.genOk;if(e&&e.status==404)nfSet("parent_month_general")}draw()}
-function nf(f){try{return Date.now()-(+localStorage.getItem("hq_nf:"+f)||0)<216e5}catch(e){return false}}
-function nfSet(f){try{localStorage.setItem("hq_nf:"+f,Date.now())}catch(e){}}
+function nf(f){try{return Date.now()-(+localStorage.getItem("hq_nf2:"+f)||0)<216e5}catch(e){return false}}
+function nfSet(f){try{localStorage.setItem("hq_nf2:"+f,Date.now())}catch(e){}}
 async function loadAl(){if(nf("parent_alerts")){ST.alOk=false;ST.al=ST.al||{items:[]};return}try{ST.al=await rpc("parent_alerts",{p_token:TOKEN});ST.alOk=true}catch(e){ST.alOk=(e&&e.code=="other"&&e.status==404)?false:ST.alOk;if(e&&e.status==404)nfSet("parent_alerts");ST.al=ST.al||{items:[]}}if(ST.tab=="fu")draw();else if(!ST.busy)draw()}
 function monNav(){const cm=curMon();return'<div class="nav"><button class="btn s" data-a="mprev" aria-label="الشهر السابق">السابق ›</button><div class="mid">'+mName(ST.mon)+(ST.mon==cm?'<small>الشهر الحالي</small>':"")+'</div><button class="btn s" data-a="mnext"'+(ST.mon>=cm?" disabled":"")+' aria-label="الشهر التالي">‹ التالي</button></div>'}
 function st4(a){return'<div class="st4">'+a.map(x=>'<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>').join("")+'</div>'}
