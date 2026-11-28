@@ -522,13 +522,16 @@ function mst(id,mk){let h=0,r=0,a=0,t=0,s=0,c=0;const xs=[];Object.keys(S.days).
 function st(id,keys){let h=0,r=0,a=0,t=0,s=0,c=0,cd=0;keys.forEach(k=>{if(!cday(k))return;cd++;const d=rd(k,id);if(!d)return;if(d.att==3){a++;if(d.sc!=null&&d.sc!==""){s+=+d.sc;c++}return}if(d.att==0&&(d.pg||d.sur>=0||(d.x||[]).some(e=>e&&(e.pg>0||e.sur>=0))))t++;if(d.att==0)ents(d).forEach(e=>{if(e.pg){if(e.hf==2)r+=e.pg;else h+=e.pg}else if(e.sur>=0){if(e.hf==2)r+=epg(e);else if(e.hf==1)h+=epg(e)}});if(d.sc!=null&&d.sc!==""){s+=+d.sc;c++}});return{h,r,a,t,cd,pr:cd-a,rate:cd?Math.round((cd-a)/cd*100):null,av:c?Math.round(s/c*10+1e-9)/10:null}}
 function posTxt(id,hf){const ks=allKeys().reverse();for(let i=0;i<ks.length;i++){const d=rd(ks[i],id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur>=0).pop();if(l)return{t:SUR[l.sur]+(+l.ta>0?" (حتى آية "+l.ta+")":""),k:ks[i]}}const sp=((S.sp||{})[id]||{})[hf];if(sp&&sp.sur>=0)return{t:SUR[sp.sur]+(+sp.ay>0?" (آية "+sp.ay+")":""),k:null};return null}
 function lastRec(id){const ks=allKeys().reverse();for(let i=0;i<ks.length;i++)if(rec(ks[i],id))return ks[i];return null}
-const cfgA=()=>{S.alc=S.alc||{};if(!(S.alc.abs>=0))S.alc.abs=2;if(!(S.alc.nh>=1))S.alc.nh=3;return S.alc};
+const cfgA=()=>{S.alc=S.alc||{};if(!(S.alc.abs>=0))S.alc.abs=2;if(!(S.alc.nh>=1))S.alc.nh=3;if(!(S.alc.mab>=1))S.alc.mab=3;if(!(S.alc.plp>=1))S.alc.plp=50;return S.alc};
+function planPrev(id){const sv=ui.wvb;try{const t=dOf(todayK());t.setDate(t.getDate()-7);ui.wvb=kf(t);const g=goalOf(id).pg,a=ach(id);return g>0?{g:g,a:a,p:Math.round(a/g*100)}:null}catch(e){return null}finally{ui.wvb=sv}}
 function alerts(id){const c=cfgA(),out=[],cds=allKeys().filter(k=>k<=todayK()&&cday(k)).reverse();let run=0;
  for(let i=0;i<cds.length;i++){const d=rd(cds[i],id);if(d&&d.att==3)run++;else break}
  if(run>c.abs)out.push("غائب "+run+" أيام تسميع متتالية (آخر يوم "+dlab(cds[0])+")");
  else{const w=cds.filter(k=>(dOf(todayK())-dOf(k))/864e5<7),ab=w.filter(k=>{const d=rd(k,id);return d&&d.att==3}).length;if(ab>c.abs)out.push("غاب "+ab+" أيام خلال آخر 7 أيام")}
  const pr=cds.filter(k=>{const d=rd(k,id);return !(d&&d.att==3)}).slice(0,c.nh);
  if(pr.length==c.nh&&run==0){const noh=pr.every(k=>{const d=rd(k,id);return !(d&&d.att==0&&ents(d).some(e=>e&&e.hf==1&&(e.pg>0||e.sur>=0)))}),nt=pr.some(k=>{const d=rd(k,id);return d&&d.nt&&String(d.nt).trim()}),ex=((stu(id)||{}).ex||"").trim();if(noh&&!nt&&!ex)out.push("لم يحفظ شيئاً جديداً في آخر "+c.nh+" أيام حضور، ولا توجد ملاحظة أو سبب مسجّل")}
+ {const mo=todayK().slice(0,7),mab=cds.filter(k=>k.slice(0,7)==mo&&(d=>d&&d.att==3)(rd(k,id))).length;if(mab>=c.mab&&!out.some(x=>/^غاب|^غائب/.test(x)))out.push("غاب "+mab+" أيام هذا الشهر")}
+ {const pp=planPrev(id);if(pp&&pp.p<c.plp)out.push("أنجز "+pp.p+"٪ فقط من خطة الأسبوع الماضي")}
  return out}
 const alertList=()=>act().map(s=>({id:s.id,n:s.name,a:alerts(s.id)})).filter(x=>x.a.length);
 function honor(off){const ks=wkKeys(off),R=act().map(s=>({id:s.id,n:s.name,s:st(s.id,ks),g:s.grp}));
@@ -896,8 +899,37 @@ A.hbShare=async()=>{try{const c=await hbCanvas();await shareBlob(await blobOf(c)
 
 /* ---- follow-up (alerts) ---- */
 function vFollow(){const L=alertList(),c=cfgA();
- return'<div class="card"><b>⚙️ شروط التنبيه</b><div class="row"><div><label>غياب أكثر من (أيام تسميع متتالية)</label><input type="number" min="1" data-c="alc" data-f="abs" value="'+c.abs+'"></div><div><label>بلا حفظ جديد خلال (أيام حضور)</label><input type="number" min="1" data-c="alc" data-f="nh" value="'+c.nh+'"></div></div><div class="mu">تُحسب الأيام من أيام التسميع المسجّلة فقط (إجازة الحلقة لا تُحسب). يُعدّ سبباً: ملاحظة في اليوم، أو اختبار قادم مكتوب للطالب.</div></div>'+
- (L.length?L.map(x=>'<div class="card al"><div class="nm">'+esc(x.n)+(stu(x.id).grp?'<span class="badge">'+esc(stu(x.id).grp)+"</span>":"")+"</div><ul>"+x.a.map(a=>"<li>"+esc(a)+"</li>").join("")+'</ul><div class="flex"><button type="button" class="btn s" data-a="copyAl" data-id="'+x.id+'">📋 نسخ رسالة تواصل</button><button type="button" class="btn s" data-a="prof" data-id="'+x.id+'">الملف</button></div></div>').join(""):'<div class="card" style="color:var(--ok);text-align:center">✅ ما شاء الله، لا يوجد طلاب متأخرون حالياً.</div>')}
+ return alDraftsCard()+'<div class="card"><b>⚙️ شروط التنبيه</b><div class="row"><div><label>غياب أكثر من (أيام تسميع متتالية)</label><input type="number" min="1" data-c="alc" data-f="abs" value="'+c.abs+'"></div><div><label>بلا حفظ جديد خلال (أيام حضور)</label><input type="number" min="1" data-c="alc" data-f="nh" value="'+c.nh+'"></div></div><div class="row"><div><label>غياب في الشهر (أيام)</label><input type="number" min="1" data-c="alc" data-f="mab" value="'+c.mab+'"></div><div><label>إنجاز الخطة الأسبوعية أقل من (٪)</label><input type="number" min="1" data-c="alc" data-f="plp" value="'+c.plp+'"></div></div><div class="mu">تُحسب الأيام من أيام التسميع المسجّلة فقط (إجازة الحلقة لا تُحسب). يُعدّ سبباً: ملاحظة في اليوم، أو اختبار قادم مكتوب للطالب.</div></div>'+
+ (L.length?L.map(x=>'<div class="card al"><div class="nm">'+esc(x.n)+(stu(x.id).grp?'<span class="badge">'+esc(stu(x.id).grp)+"</span>":"")+"</div><ul>"+x.a.map(a=>"<li>"+esc(a)+"</li>").join("")+'</ul><div class="flex"><button type="button" class="btn" data-a="alDraft" data-id="'+x.id+'">📨 تجهيز رسالة لولي الأمر</button><button type="button" class="btn s" data-a="copyAl" data-id="'+x.id+'">📋 نسخ رسالة تواصل</button><button type="button" class="btn s" data-a="prof" data-id="'+x.id+'">الملف</button></div></div>').join(""):'<div class="card" style="color:var(--ok);text-align:center">✅ ما شاء الله، لا يوجد طلاب متأخرون حالياً.</div>')}
+ui.al=ui.al||{list:null,busy:false,err:"",loaded:0};
+async function alLoad(){const A_=ui.al;if(A_.busy)return;A_.busy=true;A_.err="";render(true);try{const j=await tRpc("teacher_alert_list");A_.list=j.items||[];A_.loaded=Date.now()}catch(e){A_.err=tErr(e);A_.loaded=Date.now()}A_.busy=false;render(true)}
+function alDraftsCard(){const c=pubCfg();if(!pubReady(c))return"";const A_=ui.al;if(!A_.loaded&&!A_.busy)setTimeout(alLoad,0);
+ let h='<div class="card"><div class="flex" style="justify-content:space-between"><b>📨 رسائل المتابعة لأولياء الأمور</b><button type="button" class="btn s" data-a="alRef"'+(A_.busy?" disabled":"")+'>'+(A_.busy?"جاري التحميل...":"🔄 تحديث")+'</button></div><div class="mu">الرسالة مسودة تراجعها أنت وتُرسل بضغطة واحدة. لا يُرسل شيء تلقائياً، وتظهر لولي أمر هذا الطالب فقط داخل التطبيق. يجب أن يكون الطالب منشوراً مرة واحدة على الأقل.</div>';
+ if(A_.err)h+='<div class="bar err">'+esc(A_.err)+'</div>';
+ const L=A_.list||[],dr=L.filter(x=>x.status=="draft"),sn=L.filter(x=>x.status=="sent").slice(0,8);
+ dr.forEach(x=>{h+='<div class="card" style="margin:6px 0"><b>'+esc(x.student)+'</b><textarea id="ald-'+x.id+'" maxlength="600" style="width:100%;min-height:110px;margin-top:6px">'+esc(x.message)+'</textarea><div class="flex" style="margin-top:6px"><button type="button" class="btn" data-a="alSend" data-id="'+x.id+'">✅ إرسال لولي الأمر</button><button type="button" class="btn s" data-a="alSaveD" data-id="'+x.id+'">💾 حفظ التعديل</button><button type="button" class="btn s" data-a="alDis" data-id="'+x.id+'">تجاهل</button></div></div>'});
+ if(!dr.length&&A_.list)h+='<div class="mu" style="margin-top:6px">لا توجد مسودات. اضغط «تجهيز رسالة» تحت أي تنبيه.</div>';
+ if(sn.length){h+='<div class="mu" style="margin-top:8px"><b>آخر ما أُرسل:</b></div>';sn.forEach(x=>{h+='<div class="mu">✔️ '+esc(x.student)+' · '+dlab(String(x.sent_at).slice(0,10))+'</div>'})}
+ return h+'</div>'}
+A.alRef=()=>alLoad();
+A.alDraft=async el=>{const id=el.dataset.id,a=alerts(id),s=stu(id);if(!s||!a.length)return;if(!pubReady(pubCfg())){toast("أكمل إعدادات النشر أولاً",null,4000);return}
+ const t="السلام عليكم ورحمة الله،\nنودّ الاطمئنان على "+firstName(s).split(" ")[0]+" في "+S.hl+".\n"+a.map(x=>"• "+x).join("\n")+"\nنرجو التواصل معنا لما فيه مصلحته، بارك الله فيكم.";
+ try{await tRpc("teacher_alert_save",{p_student_app_id:String(id),p_kind:"auto",p_message:t});toast("جُهّزت مسودة. راجعها ثم أرسلها");await alLoad()}catch(e){toast(tErr(e),null,5000)}};
+A.alSaveD=async el=>{const id=el.dataset.id,v=($("#ald-"+id)||{}).value;try{await tRpc("teacher_alert_save",{p_student_app_id:"",p_kind:"",p_message:v,p_id:id});toast("تم الحفظ");await alLoad()}catch(e){toast(tErr(e),null,5000)}};
+A.alSend=async el=>{const id=el.dataset.id,v=($("#ald-"+id)||{}).value;const ok=await confirmReal("إرسال الرسالة","ستظهر هذه الرسالة لولي أمر هذا الطالب فقط داخل تطبيق الأولياء. متابعة؟","إرسال",false);if(!ok)return;
+ try{await tRpc("teacher_alert_save",{p_student_app_id:"",p_kind:"",p_message:v,p_id:id});await tRpc("teacher_alert_send",{p_id:id});toast("أُرسلت الرسالة ✅");await alLoad()}catch(e){toast(tErr(e),null,5000)}};
+A.alDis=async el=>{try{await tRpc("teacher_alert_dismiss",{p_id:el.dataset.id});await alLoad()}catch(e){toast(tErr(e),null,5000)}};
+ui.mp=ui.mp||{m:"",st:null,busy:false,err:"",cons:false,key:""};
+async function mpLoad(){const M=ui.mp;if(M.busy)return;M.busy=true;M.err="";M.key=M.m;render(true);try{const j=await tRpc("teacher_month_status",{p_month:M.m});M.st=j;M.cons=!!j.consent_full}catch(e){M.err=tErr(e);M.st=null}M.busy=false;render(true)}
+function mpCard(){const c=pubCfg();if(!pubReady(c))return"";const M=ui.mp;if(!M.m)M.m=todayK().slice(0,7);if(M.key!==M.m&&!M.busy)setTimeout(mpLoad,0);
+ return'<div class="card"><b>📅 نشر التقرير الشهري</b><div class="mu">يظهر لأولياء الأمور تبويب «الحلقة» (لوحة الشرف، مجموع الصفحات، متوسط الحضور) بالإيجابيات فقط. التقرير الخاص بكل طالب يُحسب من الأسابيع المنشورة.</div><label>الشهر</label><input type="month" value="'+M.m+'" data-c="mpm">'+
+ '<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" data-c="mpc"'+(M.cons?" checked":"")+'> أؤكد وجود موافقة خطية من أولياء الأمور لعرض جدول الأسماء الأولى</label>'+
+ (M.st?'<div class="mu" style="margin-top:6px">'+(M.st.published?"✅ منشور"+(M.st.consent_full?" (مع جدول الأسماء الأولى)":" (إيجابيات فقط)"):"غير منشور بعد")+'</div>':"")+(M.err?'<div class="bar err">'+esc(M.err)+'</div>':"")+
+ '<div class="flex" style="margin-top:8px"><button type="button" class="btn" data-a="mpPub"'+(M.busy?" disabled":"")+'>📤 نشر الشهر</button>'+(M.st&&M.st.published?'<button type="button" class="btn s" data-a="mpUn">إلغاء النشر</button>':"")+'</div></div>'}
+C.mpm=el=>{ui.mp.m=el.value||ui.mp.m;ui.mp.key="";render(true)};C.mpc=el=>{ui.mp.cons=el.checked};
+A.mpPub=async()=>{const M=ui.mp;if(!M.m)return;const ok=await confirmReal("نشر تقرير الشهر","سيظهر تقرير الحلقة العام لشهر "+M.m+" لأولياء الأمور"+(M.cons?" مع جدول الأسماء الأولى (بعد تأكيدك لموافقتهم الخطية)":" بالإيجابيات فقط")+". متابعة؟","نشر",false);if(!ok)return;
+ try{await tRpc("teacher_publish_month",{p_month:M.m,p_consent_full:!!M.cons});toast("تم نشر تقرير الشهر ✅");await mpLoad()}catch(e){toast(tErr(e),null,5000)}};
+A.mpUn=async()=>{const M=ui.mp;try{await tRpc("teacher_unpublish_month",{p_month:M.m});toast("أُلغي النشر");await mpLoad()}catch(e){toast(tErr(e),null,5000)}};
 C.alc=el=>{const v=Math.max(1,Math.round(+el.value)||1);cfgA()[el.dataset.f]=v;sv();render()};
 
 /* ---- archive ---- */
@@ -1398,7 +1430,7 @@ const SUBS_PT=[["pub",'<span class="pti">📤</span>النشر'],["par",'<span c
 function ptCur(){const c=ui.sub.portal;if(c&&SUBS_PT.some(x=>x[0]===c))return c;return pubReady(pubCfg())?"pub":"acc"}
 function vPortal(){if(!S.students.length)return'<div class="card empty">أضف الطلاب أولاً.</div>'+pubSetCard();const ok=pubReady(pubCfg()),c=ptCur();
  let b;if(c==="acc")b=pubSetCard();else if(!ok)b='<div class="card"><b>⚙️ أكمل إعداد الحساب أولاً</b><div class="mu">لتفعيل النشر والروابط والمتابعة، سجّل حسابك من تبويب «الحساب».</div><button type="button" class="btn w" style="margin-top:8px" data-a="sub" data-tab="portal" data-v="acc">فتح تبويب الحساب</button></div>';
- else if(c==="pub")b=weekNav()+pubCard();else if(c==="par")b=parCard();else b=weekNav()+dashCard()+intCard();
+ else if(c==="pub")b=weekNav()+pubCard()+mpCard();else if(c==="par")b=parCard();else b=weekNav()+dashCard()+intCard();
  const fx=ui.ptfx;if(fx)setTimeout(()=>{ui.ptfx=0},500);
  return'<div class="ptchips">'+chipsH("portal",SUBS_PT,c)+'</div><div class="ptpane'+(fx?" ptin-"+fx:"")+'">'+b+'</div>'}
 function pubDays(a,b){const ks=[];let c=dOf(a);for(let i=0;i<14&&kf(c)<=b;i++){ks.push(kf(c));c.setDate(c.getDate()+1)}return ks}
