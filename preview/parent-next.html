@@ -371,7 +371,7 @@ function moStats(D){const T=D.totals||{};const hp=+T.hifz||0,rp=+T.review||0,pr=
  return{hp,rp,pr,ab,ex,att,g,a,pct,rate,juz,jzApprox,tp:hp+rp,has:tot+hp+rp>0}}
 function lvl(p,t){return p==null?["بدون خطة","neu"]:p>=t[0]?["ممتاز",""]:p>=t[1]?["جيد","neu"]:["يحتاج متابعة","bad"]}
 function levels(S){const m=lvl(S.pct,LV.plan),at=lvl(S.att,LV.att);
- const rr=S.hp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","neu"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز",""]:rr>=LV.rev/2?["جيد","neu"]:["يحتاج متابعة","bad"];
+ const rr=S.hp>0&&S.rp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","neu"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز",""]:rr>=LV.rev/2?["جيد","neu"]:["يحتاج متابعة","bad"];
  return{mem:m,rev:rv,reg:at}}
 async function monthFromWeeks(mon,sid){
  const ms=mon+"-01",me=fd(new Date(+mon.slice(0,4),+mon.slice(5)-0,0)),lo=shift(ms,-6);
