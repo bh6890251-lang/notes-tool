@@ -1,7 +1,16 @@
 /* service worker for the parent page only (scope: parent.html). Handles push notifications. */
 self.addEventListener("install", e => { self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(self.clients.claim()); });
-self.addEventListener("fetch", e => { /* network only; the page needs the internet to load reports */ });
+const CN="hq-shell-v1",SH=["parent.html","../icon-192.png","../favicon.ico"];
+self.addEventListener("fetch", e => {
+  const r = e.request; if (r.method !== "GET") return;
+  const u = new URL(r.url); if (u.origin !== location.origin) return;
+  if (!/parent\.html$|icon-192\.png$|favicon\.ico$/.test(u.pathname)) return;
+  e.respondWith(caches.open(CN).then(c => c.match(r, {ignoreSearch: true}).then(hit => {
+    const net = fetch(r).then(x => { if (x && x.ok) c.put(u.origin + u.pathname, x.clone()); return x; }).catch(() => hit);
+    return hit || net;
+  })));
+});
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = {}; }
