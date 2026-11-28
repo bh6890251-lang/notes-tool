@@ -251,7 +251,7 @@ nav.bot button.on::after{animation:mo-bar .35s ease-out;transform-origin:center}
 .swr{position:relative;overflow:hidden;border-radius:10px;touch-action:pan-y;background:inherit}
 .swf{position:relative;background:inherit;will-change:transform}
 .swbg{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-weight:800;font-size:15px;color:#fff;opacity:0;pointer-events:none}
-.swbg span{visibility:hidden;position:absolute;top:50%;transform:translateY(-50%)}.swbg .swl{left:16px}.swbg .swrr{right:16px}
+.swbg span{visibility:hidden;position:absolute;top:50%;transform:translateY(-50%)}.swbg .swl{left:16px}.swbg .swrr{right:16px}.swr.sw-r .swbg{background:#b7791f}fieldset.lk{border:0;padding:0;margin:0;min-width:0;opacity:.5}
 .swr.sw-r .swbg{background:var(--g);opacity:1}.swr.sw-r .swl{visibility:visible}
 .swr.sw-l .swbg{background:var(--rd);opacity:1}.swr.sw-l .swrr{visibility:visible}
 .swr.sw-go .swbg{filter:brightness(1.18)}
@@ -636,10 +636,12 @@ function entryHtml(id,j,e,scSel){const a='data-id="'+id+'" data-j="'+j+'"',on=e.
 function cardBody(s,m){const id=s.id,d=dget(id),a='data-id="'+id+'"';
  if(m.t){return'<div class="seg" role="group" aria-label="الحضور"><button type="button" class="'+(d.att!=3?"on":"")+'" data-a="att" '+a+' data-v="0">حاضر</button><button type="button" class="'+(d.att==3?"on ab":"")+'" data-a="att" '+a+' data-v="3">غائب</button></div>'}
  const scSel='<select data-c="sc" '+a+' aria-label="التقييم من 10">'+scOpts(d.sc)+"</select>";
- let h='<label>الحالة</label><div class="seg" role="group" aria-label="الحالة"><button type="button" class="'+(d.att==0&&d.ok?"on":"")+'" data-a="att" '+a+' data-v="0">سمّع</button><button type="button" class="'+(d.att==1?"on ns":"")+'" data-a="att" '+a+' data-v="1">لم يسمّع</button><button type="button" class="'+(d.att==2?"on ns":"")+'" data-a="att" '+a+' data-v="2">لم يسمّع (معذور)</button><button type="button" class="'+(d.att==3?"on ab":"")+'" data-a="att" '+a+' data-v="3">غائب</button></div>';
+ let h='<label>الحالة</label><div class="seg" role="group" aria-label="الحالة"><button type="button" class="'+(d.att==0&&d.ok?"on":"")+'" data-a="att" '+a+' data-v="0">سمّع</button><button type="button" class="'+(d.att==1||d.att==2?"on ns":"")+'" data-a="att" '+a+' data-v="1">لم يسمّع</button><button type="button" class="'+(d.att==3?"on ab":"")+'" data-a="att" '+a+' data-v="3">غائب</button></div>';
  if(d.att==3)return h+'<div class="row"><div><label>التقييم /10</label>'+scSel+"</div></div>"+'<label>ملاحظة</label><input data-c="nt" data-on="input" '+a+' value="'+esc(d.nt||"")+'" placeholder="سبب الغياب أو ملاحظة" aria-label="ملاحظة">';
+ if(d.att==1||d.att==2)return h+'<div class="hint2">🔒 الحالة «لم يسمّع»'+(d.att==2?" (سُجّل سابقاً بعذر)":"")+': خيارات السورة والآيات مقفلة. اختر «سمّع» لتفعيلها.</div><fieldset disabled class="lk"><div class="en">'+entryHtml(id,-1,d)+'</div></fieldset><div class="row"><div><label>التقييم /10</label>'+scSel+"</div></div>"+'<label>ملاحظة</label><input data-c="nt" data-on="input" '+a+' value="'+esc(d.nt||"")+'" placeholder="سبب أو ملاحظة" aria-label="ملاحظة">';
  const g=drOf(id);
  if(g){const p=planFor(id);h+='<div class="sugg"><span class="sp">↪ المقترح: <b>'+esc(SUR[g.sur])+"</b>"+(g.fa?" من آية "+g.fa:" (سورة جديدة)")+'</span>'+(p?'<button type="button" class="btn" data-a="qplan" '+a+'>⚡ سمّع حسب الخطة<br><small>'+esc(planTxt(p))+'</small></button>':"")+'<button type="button" class="btn s" data-a="accept" '+a+">اعتماد</button></div>"}
+ {const q=!todayHas(id,2)&&revRot(id);if(q)h+='<div class="sugg"><span class="sp">🔄 مراجعة مقترحة: <b>'+esc(SUR[q.sur])+'</b> <small class="mu">('+q.why+')</small></span><button type="button" class="btn s" data-a="qrot" '+a+'>إضافة</button></div>'}
  {const r=!todayHas(id,2)&&lastRev(id);if(r)h+='<div class="sugg"><span class="sp">🔁 نفس مراجعة '+esc(relD(r.k))+': <b>'+esc(revTxt(r.l))+'</b></span><button type="button" class="btn s" data-a="qrev" '+a+'>تكرار</button></div>'}
  /* continue-review box */
  if(!todayHas(id,2)){const q=sugg(id,2);if(q&&q.post&&q.sur!=null){const L=lastPos(id,2);h+='<div class="sugg"><span class="sp">▶ مراجعة بعد الحفظ: <b>'+esc(SUR[q.sur])+"</b> (باقي "+rmP(q.rem)+")</span><button type=\"button\" class=\"btn s\" data-a=\"cont\" "+a+' data-v="2">إضافة</button></div>'}}
@@ -651,7 +653,7 @@ function cardBody(s,m){const id=s.id,d=dget(id),a='data-id="'+id+'"';
  return h}
 function stCard(s,i){const m=dmk(),d=dget(s.id),bk=!!(ui.bulk&&ui.bulk.on),bs=bk&&ui.bulk.sel[s.id],open=!bk&&(!!ui.open[s.id]||ui.flt===s.id),ok=isRec(s.id);
  const rk=bk?'<span class="rk bk'+(bs?" ok":"")+'">'+(bs?"✓":"")+"</span>":'<span class="rk '+(d.att==3?"ab":ok?"ok":"")+'">'+(d.att==3?"✕":ok?"✓":"")+"</span>";
- return'<div class="card sc'+(d.att==3?" ab":"")+(ok?" done":"")+(open?" open":"")+(bs?" bsel":"")+'" data-sid="'+s.id+'"><div class="swr"><div class="swbg" aria-hidden="true"><span class="swl">✓ سمّع</span><span class="swrr">غائب ✕</span></div><button type="button" class="sum swf" data-a="tgc" data-id="'+s.id+'" aria-expanded="'+open+'">'+rk+'<span class="nmx"><b>'+(i+1)+". "+esc(s.name)+"</b><small>"+esc(sumText(s.id))+'</small></span><span class="cv" aria-hidden="true">▾</span></button></div>'+(!bk&&!open?quickStrip(s.id,d):"")+(open?'<div class="bd">'+cardBody(s,m)+"</div>":"")+"</div>"}
+ return'<div class="card sc'+(d.att==3?" ab":"")+(ok?" done":"")+(open?" open":"")+(bs?" bsel":"")+'" data-sid="'+s.id+'"><div class="swr"><div class="swbg" aria-hidden="true"><span class="swl">◐ لم يسمّع</span><span class="swrr">غائب ✕</span></div><button type="button" class="sum swf" data-a="tgc" data-id="'+s.id+'" aria-expanded="'+open+'">'+rk+'<span class="nmx"><b>'+(i+1)+". "+esc(s.name)+"</b><small>"+esc(sumText(s.id))+'</small></span><span class="cv" aria-hidden="true">▾</span></button></div>'+(!bk&&!open?quickStrip(s.id,d):"")+(open?'<div class="bd">'+cardBody(s,m)+"</div>":"")+"</div>"}
 function progInfo(L){const n=L.length,r=L.filter(s=>isRec(s.id)).length;return{n,r}}
 function vToday(){const m=dmk(),L=act(),pi=progInfo(L),tk=todayK();
  const wk=(()=>{const[a]=wrange();return[0,1,2,3,4,5].map(i=>addDays(a,i))})();
@@ -666,7 +668,7 @@ function vToday(){const m=dmk(),L=act(),pi=progInfo(L),tk=todayK();
  const list=ui.flt?L.filter(s=>s.id===ui.flt):L;
  if(!ui.flt)h+='<div class="prog">سُجّل '+pi.r+" من "+pi.n+" طلاب"+(pi.n&&pi.r==pi.n?" ✅":"")+'</div><div class="pbar" role="progressbar" aria-valuenow="'+pi.r+'" aria-valuemax="'+pi.n+'"><i style="width:'+(pi.n?pi.r/pi.n*100:0)+'%"></i></div><div class="flex" style="margin:10px 0"><button type="button" class="btn" data-a="allp"'+(pi.r==pi.n?" disabled":"")+'>✓ الكل حاضر</button><button type="button" class="btn s" data-a="rpt" data-v="daily">📤 تقرير اليوم</button><button type="button" class="btn s" data-a="bkOn">'+(ui.bulk&&ui.bulk.on?"✕ إنهاء التحديد":"☑ مراجعة جماعية")+'</button></div>';
  list.forEach(s=>{h+=stCard(s,L.indexOf(s))});
- if(!ui.flt)h+='<div class="mu">اضغط الكل حاضر ثم عدّل الاستثناءات فقط. اضغط اسم الطالب لتسجيل السورة والصفحات.<br>↔ اسحب صف الطالب: <b>يميناً = سمّع</b> · <b>يساراً = غائب</b> (مع «تراجع»).</div>';
+ if(!ui.flt)h+='<div class="mu">اضغط الكل حاضر ثم عدّل الاستثناءات فقط. اضغط اسم الطالب لتسجيل السورة والصفحات.<br>↔ اسحب صف الطالب: <b>يميناً = لم يسمّع</b> · <b>يساراً = غائب</b> (مع «تراجع»).</div>';
  return h}
 A.qtg=()=>{ui.qOpen=!ui.qOpen;render()};
 A.rpt=el=>{go("reports",el.dataset.v)};
@@ -686,7 +688,7 @@ function restoreRec(id,k,snap){const dd=S.days[k]||(S.days[k]={});if(snap)dd[id]
 A.att=el=>{const id=el.dataset.id,v=+el.dataset.v;const d=ED(id);d.att=v;d.ok=1;sv();render()};
 A.allp=()=>{const k=S.dt,L=act().filter(s=>!isRec(s.id)),before=L.map(s=>[s.id,snapRec(s.id,k)]);L.forEach(s=>{const d=ED(s.id,k);d.att=0;d.ok=1});sv();render();toast("تم تسجيل "+L.length+" طلاب حاضرين",()=>{before.forEach(([id,sn])=>{const dd=S.days[k]||(S.days[k]={});if(sn)dd[id]=sn;else delete dd[id]});sv();render()})};
 C.hfs=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.hf=+el.value||0;if(e.hf==1&&e.sur>=0&&!(+e.fa>0)&&!(+e.ta>0)&&(!e.pg||e.pg==surPg(e.sur)))autoFa(id,e);sv();render()};
-C.sur=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.sur=+el.value;delete e.fa;delete e.ta;e.na=0;if(e.sur>=0&&!e.hf)e.hf=1;e.pg=e.sur>=0?surPg(e.sur):0;if(e.sur>=0&&e.hf==1)autoFa(id,e);sv();render()};
+C.sur=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;e.sur=+el.value;delete e.fa;delete e.ta;e.na=0;if(e.sur>=0&&!e.hf)e.hf=1;e.pg=e.sur>=0?surPg(e.sur):0;if(e.sur>=0)fillRange(id,e);sv();render()};
 const nrm=t=>String(t||"").replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[إأآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).toLowerCase().trim();
 A.surPick=el=>{const id=el.dataset.id,j=+el.dataset.j;const e=ge(id,j);if(!e)return;const sel=[];if(e.sur>=0)sel.push(e.sur);
  const draw=q=>{const n=nrm(q);const L=SUR.map((x,i)=>[x,i]).filter(([x,i])=>!n||nrm(x).includes(n)||String(i+1)===n);return L.length?L.map(([x,i])=>'<button type="button" class="surit'+(sel.includes(i)?" on":"")+'" data-si="'+i+'"><span>'+(sel.includes(i)?"☑ ":"☐ ")+(i+1)+". "+esc(x)+'</span><small>'+AYC[i]+" آية · "+surPg(i)+" ص</small></button>").join(""):'<div class="mu" style="padding:12px">لا نتائج</div>'};
@@ -1680,7 +1682,7 @@ function lastEnd(id,sur,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).s
 function autoFa(id,e){const f=lastEnd(id,e.sur,1);if(f>1){e.fa=f;delete e.ta;e.pg=0;e.na=1}}
 function lastAmt(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse();for(const k of ds){const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur>=0).pop();if(!l)continue;const p=l.pg?l.pg:epg(l);if(p>0)return p}return 0}
 /* plan = continue from the suggestion, same size as the student's last memorization entry (to the surah end when the rest is about that size) */
-function planFor(id){const d0=rd(S.dt,id)||blank();if(d0.att!=0||todayHas(id,1))return null;const g=sugAy(id);if(!g)return null;const Tt=AYC[g.sur],st=g.fa||1,amt=lastAmt(id,1),rest=wsum(g.sur,st,Tt);let ta=Tt;if(amt>0&&rest>amt+0.25)ta=endByPages(g.sur,st,amt);
+function planFor(id){const d0=rd(S.dt,id)||blank();if(d0.att!=0||todayHas(id,1))return null;const g=sugAy(id);if(!g)return null;const Tt=AYC[g.sur],st=g.fa||1,amt=avgAmt(id,1),rest=wsum(g.sur,st,Tt);let ta=Tt;if(amt>0&&rest>amt+Math.max(0.5,amt*0.2))ta=endByPages(g.sur,st,amt);
  const whole=st<=1&&ta>=Tt;return{sur:g.sur,fa:st,ta,whole,pg:whole?surPg(g.sur):q4(wsum(g.sur,st,ta))}}
 const planTxt=p=>SUR[p.sur]+(p.whole?"":" من آية "+p.fa+" إلى "+p.ta)+" · "+pgf(p.pg);
 function applyPlan(id){const p=planFor(id);if(!p)return false;const d=ED(id);d.att=0;d.ok=1;let e=d;if(d.sur>=0||d.hf||d.jz){e={};(d.x=d.x||[]).push(e)}e.sur=p.sur;e.hf=1;e.na=0;if(p.whole){delete e.fa;delete e.ta;e.pg=surPg(p.sur)}else{e.fa=p.fa;e.ta=p.ta;e.pg=0}return true}
@@ -1705,7 +1707,7 @@ C.tan=el=>{const id=el.dataset.id,e=ge(id,+el.dataset.j);if(!e||e.sur<0)return;c
  if(v>Tt){toast("⚠️ سورة "+SUR[e.sur]+" فيها "+Tt+" آية فقط — لم يُطبَّق الرقم "+v,null,4500);render();return}
  if(+e.fa>0&&v<+e.fa){toast("⚠️ آية النهاية ("+v+") قبل آية البداية ("+e.fa+")",null,4500);render();return}
  e.ta=v;e.pg=0;e.na=0;sv();render()};
-/* swipe on a student row: right = heard, left = absent */
+/* swipe on a student row: right = did not hear, left = absent (undo toast) */
 (function(){let sw=null,lastSw=0;
  const thr=w=>Math.max(90,w*0.35);
  document.addEventListener("pointerdown",e=>{if(sw)return;const r=e.target.closest&&e.target.closest(".swr");if(!r||(ui.bulk&&ui.bulk.on)||(e.pointerType==="mouse"&&e.button!==0))return;sw={r,id:r.closest(".sc").dataset.sid,x:e.clientX,y:e.clientY,dx:0,on:false,f:r.querySelector(".swf"),w:r.offsetWidth,pid:e.pointerId}});
@@ -1716,14 +1718,28 @@ C.tan=el=>{const id=el.dataset.id,e=ge(id,+el.dataset.j);if(!e||e.sur<0)return;c
  function done(e,cancel){if(!sw||(e&&e.pointerId!==sw.pid))return;const o=sw;sw=null;if(!o.on)return;lastSw=Date.now();
   const go=!cancel&&Math.abs(o.dx)>=thr(o.w);o.f.style.transition="transform .18s ease-out";o.f.style.transform="";
   setTimeout(()=>{o.r.classList.remove("swing","sw-r","sw-l","sw-go");o.f.style.transition=""},200);
-  if(go)swipeAct(o.id,o.dx>0?"ok":"ab")}
+  if(go)swipeAct(o.id,o.dx>0?"nh":"ab")}
  document.addEventListener("pointerup",e=>done(e,false));document.addEventListener("pointercancel",e=>done(e,true));
  document.addEventListener("click",e=>{if(Date.now()-lastSw<400){e.stopPropagation();e.preventDefault()}},true);
  function swipeAct(id,kind){const k=S.dt,sn=snapRec(id,k),d0=dget(id);
-  if(kind==="ok"&&d0.att==0&&d0.ok){toast(sname(id)+": مسجّل مسبقاً (سمّع)");return}
+  if(kind==="nh"&&d0.att==1){toast(sname(id)+": مسجّل مسبقاً (لم يسمّع)");return}
   if(kind==="ab"&&d0.att==3){toast(sname(id)+": مسجّل مسبقاً (غائب)");return}
-  const d=ED(id);d.att=kind==="ok"?0:3;d.ok=1;sv();setTimeout(()=>{render();toast((kind==="ok"?"سمّع: ":"غائب: ")+sname(id),()=>restoreRec(id,k,sn),6000)},210)}
+  const d=ED(id);d.att=kind==="nh"?1:3;d.ok=1;sv();setTimeout(()=>{render();toast((kind==="nh"?"لم يسمّع: ":"غائب: ")+sname(id),()=>restoreRec(id,k,sn),6000)},210)}
 })();
+/* surah chosen: fill ayah range (from the continuation point or ayah 1, to the last ayah); pages are computed from the range */
+function fillRange(id,e){const Tt=AYC[e.sur],f=(e.hf==1)?lastEnd(id,e.sur,1):0;e.fa=f>1?f:1;e.ta=Tt;e.na=0;e.pg=0}
+/* typical amount: median of the student's last 3 recorded amounts of this type (robust to one odd day), rounded to a quarter page */
+function avgAmt(id,hf){const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort().reverse(),v=[];for(const k of ds){if(v.length>=3)break;const d=rd(k,id);if(!d||d.att!=0)continue;const l=ents(d).filter(e=>e&&e.hf==hf&&e.sur>=0&&!(e.na&&!e.pg));if(!l.length)continue;const p=l.reduce((s,e)=>s+(e.pg?e.pg:epg(e)),0);if(p>0)v.push(p)}
+ if(!v.length)return 0;if(v.length<3)return v[0];v.sort((a,b)=>a-b);return Math.round(v[1]*4)/4}
+/* review rotation: among surahs the student memorized (not today), the one least recently memorized or reviewed, at least 3 days ago */
+function revRot(id){if(todayHas(id,2))return null;const ds=Object.keys(S.days||{}).filter(k=>k<S.dt).sort(),last={};ds.forEach(k=>{const d=rd(k,id);if(!d||d.att!=0)return;ents(d).forEach(e=>{if(e&&e.sur>=0&&!e.jz&&!(e.na&&!e.pg)&&(e.hf==1||e.hf==2))last[e.sur]=k})});
+ let best=null;Object.keys(last).forEach(s=>{const k=last[s],age=Math.round((dOf(S.dt)-dOf(k))/864e5);if(age<3)return;if(!best||k<best.k)best={sur:+s,k,age}});
+ return best?{sur:best.sur,why:"آخر مرور قبل "+best.age+" يوم"}:null}
+A.qrot=el=>{const id=el.dataset.id,q=revRot(id);if(!q)return;const k=S.dt,sn=snapRec(id,k),n=addRev(id,[{sur:q.sur,hf:2,pg:surPg(q.sur)}]);sv();render();toast(n?"مراجعة "+SUR[q.sur]+" لـ "+sname(id):"هذه المراجعة مسجّلة مسبقاً",n?()=>restoreRec(id,k,sn):null,7000)};
+/* entering a surah/ayah means the student heard: switch not-heard/absent back to heard */
+(function(){const fix=id=>{const d=rd(S.dt,id);if(!d||d.att==0&&d.ok)return false;if(!ents(d).some(e=>e&&e.sur>=0))return false;const dd=ED(id);dd.att=0;dd.ok=1;return true};
+ const wr=(o,n)=>{const f=o[n];if(typeof f!=="function")return;o[n]=function(el){const r=f.apply(this,arguments);const id=el&&el.dataset&&el.dataset.id;if(id&&fix(id)){sv();render()}return r}};
+ ["sur","fa","ta","tan","hfs","pg"].forEach(n=>wr(C,n));["qEnd","qAdd","accept","cont"].forEach(n=>wr(A,n))})();
 /* bulk review */
 function bkTog(id,el){const b=ui.bulk;if(b.sel[id])delete b.sel[id];else b.sel[id]=1;const c=el.closest(".sc"),on=!!b.sel[id];c.classList.toggle("bsel",on);const r=c.querySelector(".rk");r.classList.toggle("ok",on);r.textContent=on?"✓":"";bkBar()}
 A.bkOn=()=>{ui.bulk=ui.bulk&&ui.bulk.on?{on:false,sel:{}}:{on:true,sel:{}};document.body.classList.toggle("bulk",ui.bulk.on);render()};
