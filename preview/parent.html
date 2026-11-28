@@ -424,7 +424,7 @@ function drawGen(){const M=$("#main");let h=monNav();
  if(ST.moErr){M.innerHTML=h+'<div class="err">'+esc(ST.moErr)+'</div>';return}
  const G=GD[ST.mon];if(!G||!G.ok||G.empty){M.innerHTML=h+'<div class="sc empty"><div class="mu">لا يوجد تقرير عام لهذا الشهر بعد.</div></div>';return}
  h+='<div class="sc"><div class="nm">تقرير الحلقة · '+mName(ST.mon)+'</div><div class="mu">'+esc(G.halaqa_name||"")+'</div>'+
-  st4([[nm(Math.round(G.total_pages||0)),"📖 صفحات الحلقة"],[G.avg_attendance==null?"—":nm(Math.round(G.avg_attendance))+"٪","✅ متوسط الحضور"],[nm(G.juz_completed||0),"🎓 أجزاء مكتملة"],[nm(G.students||0),"👥 الطلاب"]])+'</div>';
+  st4([[nm(Math.round(G.total_pages||0)),"📖 صفحات الحلقة"],[G.avg_attendance==null?"—":nm(Math.round(G.avg_attendance))+"٪","✅ متوسط الحضور"],[G.juz_completed==null?"—":nm(G.juz_completed),"🎓 أجزاء مكتملة"],[nm(G.students||0),"👥 الطلاب"]])+'</div>';
  const hf=(G.honor&&G.honor.hifz)||[],cm=(G.honor&&G.honor.commit)||[],col=["#d9a21b","#9aa5a8","#b87333","#ddd","#ddd"];
  const lst=(L,f)=>L.map((r,i)=>'<div class="hb"><span class="rank" style="background:'+col[i]+'">'+nm(i+1)+'</span><b style="flex:1">'+esc(r.n)+'</b><small class="mu">'+f(r)+'</small></div>').join("");
  h+='<details class="sc" open><summary style="font-weight:700;font-size:17px;cursor:pointer;min-height:32px">🏆 لوحة الشرف لهذا الشهر</summary>'+
