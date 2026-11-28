@@ -1300,17 +1300,18 @@ function pubPayload(){const[a,b]=wrange(),ks=pubDays(a,b);
    goal_pages:G.pg>0?G.pg:null,goal_type:G.pg>0?G.type:null,achieved_pages:G.pg>0?D.ac:null,hifz_pages:D.hp,review_pages:D.rp,
    present_days:pr,absent_days:ab,excused_days:ex,rating:D.sc!=null?D.sc:null,teacher_note:D.tn||null,days}})}}
 function pubCard(){const c=pubCfg(),[a]=wrange(),l=(c.last||{})[a];
- return'<div class="card"><b>☁️ نشر الأسبوع</b><div class="mu">يرفع ملخصاً أسبوعياً لكل طالب فقط (الأيام، ما سمّعه، الصفحات، الحضور والغياب، الهدف والمنجز، التقييم، ملاحظتك). لا يحذف شيئاً من بياناتك.'+(l?"<br>آخر نشر لهذا الأسبوع: "+esc((d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(l.t)))+" ("+l.n+" طالب). عدّلت شيئاً بعده؟ انشر مرة أخرى فيتحدّث.":"")+'</div><button type="button" class="btn w" style="margin-top:8px" data-a="pubGo"'+(ui.pubBusy?" disabled":"")+">"+(ui.pubBusy?"جاري النشر...":"☁️ نشر الأسبوع")+"</button></div>"}
+ return'<div class="card"><b>☁️ نشر للأولياء</b><div class="mu">«نشر تسميع اليوم» يرسل لولي الأمر ما سمّعه طالبه اليوم (السورة والآيات والصفحات) مساءً. يرفع ملخصاً أسبوعياً لكل طالب فقط (الأيام، ما سمّعه، الصفحات، الحضور والغياب، الهدف والمنجز، التقييم، ملاحظتك). لا يحذف شيئاً من بياناتك.'+(l?"<br>آخر نشر لهذا الأسبوع: "+esc((d=>d.getDate()+"/"+(d.getMonth()+1)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"))(new Date(l.t)))+" ("+l.n+" طالب). عدّلت شيئاً بعده؟ انشر مرة أخرى فيتحدّث.":"")+'</div><button type="button" class="btn w" style="margin-top:8px" data-a="pubToday"'+(ui.pubBusy?" disabled":"")+">"+(ui.pubBusy?"جاري النشر...":"📤 نشر تسميع اليوم")+'</button><button type="button" class="btn s w" style="margin-top:8px" data-a="pubGo"'+(ui.pubBusy?" disabled":"")+">☁️ نشر الأسبوع كاملاً</button></div>"}
 function pubErr(r,j){const m=((j&&(j.message||j.error||j.msg))||"")+"";
  if(/forbidden/.test(m))return"كلمة سر النشر غير صحيحة";
  if(r.status==401||r.status==403||/api key|JWT|apikey/i.test(m))return"المفتاح العام غير صحيح أو غير مسموح";
  if(r.status==404||/Could not find the function|schema cache/i.test(m))return"دالة publish_week غير موجودة في قاعدة البيانات. نفّذ ملف SQL أولاً";
  return"تعذّر النشر ("+r.status+")"}
-A.pubGo=async()=>{if(ui.pubBusy)return;const c=pubCfg();
+A.pubToday=()=>{const[a,b]=wrange(),k=todayK();if(!(k>=a&&k<=b)){toast("اليوم ليس ضمن الأسبوع المعروض. اختر الأسبوع الحالي لنشر تسميع اليوم",null,4500);return}ui.pubDay=k;A.pubGo()};
+A.pubGo=async()=>{if(ui.pubBusy)return;const c=pubCfg();const pd=ui.pubDay;ui.pubDay=null;
  if(!pubReady(c)){toast("أكمل إعدادات النشر من تبويب الإعدادات أولاً",null,4500);return}
  if(navigator.onLine===false){toast("لا يوجد إنترنت الآن. لم يُنشر شيء، وتطبيقك يعمل كالمعتاد. انشر لاحقاً",null,5000);return}
  const P=pubPayload();if(!P.students.length){toast("لا يوجد طلاب في هذا الأسبوع");return}
- if(!confirm("نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء كاملة كما يلي:\n"+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
+ if(!confirm((pd?"نشر تسميع اليوم "+dlab(pd)+" لـ "+P.students.length+" طالب. يصل لأولياء الأمور ما سمّعه الطالب اليوم، ويُرفع معه بقية الأسبوع حتى اليوم (كما في النشر الأسبوعي). الأسماء:\n":"نشر أسبوع "+dlab(P.week_start)+" – "+dlab(P.week_end)+" لـ "+P.students.length+" طالب. تظهر الأسماء كاملة كما يلي:\n")+P.students.map(x=>"• "+x.first_name).join("\n")+"\n\nيُرفع الملخص الأسبوعي فقط إلى مشروع Supabase الخاص بك. متابعة؟"))return;
  ui.pubBusy=true;render(true);
  try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),25000);
   const h={"Content-Type":"application/json",apikey:c.key};if(c.key.split(".").length==3)h.Authorization="Bearer "+c.key;
