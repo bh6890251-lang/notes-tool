@@ -371,7 +371,7 @@ function moStats(D){const T=D.totals||{};const hp=+T.hifz||0,rp=+T.review||0,pr=
  return{hp,rp,pr,ab,ex,att,g,a,pct,rate,juz,jzApprox,tp:hp+rp,has:tot+hp+rp>0}}
 function lvl(p,t){return p==null?["بدون خطة","neu"]:p>=t[0]?["ممتاز",""]:p>=t[1]?["جيد","neu"]:["يحتاج متابعة","bad"]}
 function levels(S){const m=lvl(S.pct,LV.plan),at=lvl(S.att,LV.att);
- const rr=S.hp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","neu"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز",""]:rr>=LV.rev/2?["جيد","neu"]:["يحتاج متابعة","bad"];
+ const rr=S.hp>0&&S.rp>0?S.rp/S.hp:null,rv=rr==null?(S.rp>0?["جيد","neu"]:["بدون بيانات","neu"]):rr>=LV.rev?["ممتاز",""]:rr>=LV.rev/2?["جيد","neu"]:["يحتاج متابعة","bad"];
  return{mem:m,rev:rv,reg:at}}
 async function monthFromWeeks(mon,sid){
  const ms=mon+"-01",me=fd(new Date(+mon.slice(0,4),+mon.slice(5)-0,0)),lo=shift(ms,-6);
@@ -440,8 +440,8 @@ function drawFu(){const M=$("#main"),kid=ST.kids.find(k=>k.student_id==ST.sid)||
  else if(!moStats(D).has)h+='<div class="mu" style="margin-top:8px">لا توجد تقارير منشورة لهذا الشهر بعد.</div>';
  else{const S=moStats(D),L=levels(S);
   const row=(ic,t,v,why)=>'<div class="itm"><span class="ii">'+ic+'</span><div class="ib"><b>'+t+'</b><small>'+why+'</small></div><span class="tag'+(v[1]?" "+v[1]:"")+'">'+v[0]+'</span></div>';
-  h+=row("📖","الحفظ",L.mem,S.pct==null?"لا توجد خطة محددة لهذا الشهر":"أنجز "+nm(S.pct)+"٪ من خطة الشهر ("+nm(S.a)+" من "+nm(S.g)+" صفحة)")+
-   row("🔁","المراجعة",L.rev,"راجع "+esc(pgf(S.rp))+" مقابل حفظ "+esc(pgf(S.hp)))+
+  h+=row("📖","الحفظ",L.mem,S.pct==null?"لا توجد خطة محددة لهذا الشهر":(S.pct>=100?"حقق خطة الشهر وزاد (":"أنجز "+nm(S.pct)+"٪ من خطة الشهر (")+nm(S.a)+" من "+esc(pgf(S.g))+")")+
+   (D.show_review===true?row("🔁","المراجعة",L.rev,S.rp>0?"راجع "+esc(pgf(S.rp))+" مقابل حفظ "+esc(pgf(S.hp)):"لم تُسجَّل مراجعة هذا الشهر"):"")+
    row("📅","الانتظام",L.reg,S.att==null?"لا توجد أيام مسجلة":"حضر "+nm(S.pr)+" يوم ("+nm(S.att)+"٪ من أيام التسميع)")}
  h+='</div>';if(ST.alOk===false){M.innerHTML=h;return}h+='<div class="sec">💬 رسائل المعلم لك</div>';
  const it=((ST.al&&ST.al.items)||[]).filter(x=>x.student_id==ST.sid);
