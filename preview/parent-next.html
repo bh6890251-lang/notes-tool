@@ -161,8 +161,8 @@ const CF={parent_login:1,parent_weeks:1,parent_weekly:1,parent_honor:1,parent_mi
 function th(){let h=5381,s=TOKEN||"";for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return(h>>>0).toString(36)}
 function ck(fn,b){const o=Object.assign({},b);delete o.p_token;return"hq_c:"+th()+":"+fn+":"+JSON.stringify(o)}
 function cput(fn,b,j){if(!CF[fn])return;try{localStorage.setItem(ck(fn,b),JSON.stringify({t:Date.now(),v:j}))}catch(e){}}
-function cget(fn,b){if(!CF[fn])return null;try{const s=localStorage.getItem(ck(fn,b));return s?JSON.parse(s):null}catch(e){return null}}
-function cpurge(){try{Object.keys(localStorage).filter(k=>k.indexOf("hq_c:")==0).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+function cget(fn,b){if(!CF[fn])return null;try{const k=ck(fn,b),s=localStorage.getItem(k),o=s?JSON.parse(s):null;if(o&&Date.now()-o.t>2592e6){localStorage.removeItem(k);return null}return o}catch(e){return null}}
+function cpurge(){try{Object.keys(localStorage).filter(k=>k.indexOf("hq_c:")==0||k.indexOf("hq_ob:")==0).forEach(k=>localStorage.removeItem(k))}catch(e){}}
 let OFFT=0;
 function showOff(){const e=document.getElementById("off");if(!e)return;if(OFFT){e.textContent="📴 لا يوجد اتصال بالإنترنت. تُعرض آخر بيانات محدّثة ("+ago(new Date(OFFT).toISOString())+"). ستتحدّث تلقائياً عند عودة الاتصال.";e.classList.remove("hid")}else e.classList.add("hid")}
 function offOn(t){OFFT=OFFT?Math.min(OFFT,t):t;showOff()}
@@ -170,6 +170,7 @@ function offOff(){if(OFFT){OFFT=0;showOff()}}
 const RMEMO={};
 function rpc(fn,body){if(!CF[fn]||fn=="parent_login")return rpc0(fn,body);const k=fn+JSON.stringify(body),m=RMEMO[k];if(m&&Date.now()-m.t<60000)return m.p;const p=rpc0(fn,body);RMEMO[k]={t:Date.now(),p};p.catch(()=>{if(RMEMO[k]&&RMEMO[k].p===p)delete RMEMO[k]});return p}
 async function rpc0(fn,body){
+ if(navigator.onLine===false){const c0=cget(fn,body);if(c0){offOn(c0.t);return c0.v}throw{code:"net"}}
  const h={"Content-Type":"application/json",apikey:KEY};
  let r,j=null;const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
  try{r=await fetch(URL_+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(body),signal:ctl.signal})}catch(e){clearTimeout(tm);const c=cget(fn,body);if(c){offOn(c.t);return c.v}throw{code:"net"}}
@@ -187,7 +188,7 @@ let deferredInstall=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;ST.canInstall=true;if(ST.kids.length)draw()});
 window.addEventListener("appinstalled",()=>{deferredInstall=null;ST.canInstall=false;draw()});
 function u8(b){const p="=".repeat((4-b.length%4)%4),r=atob((b+p).replace(/-/g,"+").replace(/_/g,"/"));const o=new Uint8Array(r.length);for(let i=0;i<r.length;i++)o[i]=r.charCodeAt(i);return o}
-async function swReg(){if(!("serviceWorker" in navigator))return null;try{return await navigator.serviceWorker.register("parent-sw.js",{scope:"./parent.html"})}catch(e){return null}}
+async function swReg(){if(!("serviceWorker" in navigator))return null;try{return await navigator.serviceWorker.register("parent-next-sw.js",{scope:"./parent-next.html"})}catch(e){return null}}
 async function pushSync(){
  if(!pushOK()||Notification.permission!=="granted")return false;
  try{
@@ -235,6 +236,7 @@ function relink(){const d=document.createElement("div");d.className="ctr";d.inne
 async function init(){
  if(!TOKEN||TOKEN.length<16){showErr("افتح الرابط الخاص بك كما أرسله لك معلم الحلقة.");relink();return}
  try{const o=localStorage.getItem("hq_tok");if(o&&o!==TOKEN)cpurge()}catch(e){}
+ try{const c1=cget("parent_login",{}),c2=c1&&cget("parent_weekly",{p_week_start:curWeek()});if(c1&&c1.v&&(c1.v.children||[]).length&&c2){ST.parent=c1.v.parent;ST.kids=c1.v.children;ST.sid=ST.kids[0].student_id;ST.week=curWeek();ST.reps=c2.v.reports||[];ST.err="";ST.busy=false;$("#sub").textContent="أهلاً "+ST.parent;showApp();draw()}}catch(e){}
  try{rpc("parent_weekly",{p_token:TOKEN,p_week_start:curWeek()}).catch(()=>{});rpc("parent_weeks",{p_token:TOKEN}).catch(()=>{});
   const j=await rpc("parent_login",{p_token:TOKEN});
   try{localStorage.setItem("hq_tok",TOKEN)}catch(e){}
@@ -243,7 +245,7 @@ async function init(){
   swReg();
   if(!ST.kids.length){$("#main").innerHTML='<div class="card">لا يوجد أبناء مرتبطون بهذا الرابط بعد. تواصل مع معلم الحلقة.</div>';return}
   ST.sid=ST.kids[0].student_id;ST.week=curWeek();loadWeeks();
-  setTimeout(()=>{loadAl();probeGen();loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()})},1500);
+  setTimeout(()=>{obFlush();loadAl();probeGen();loadNotes();pushSync().then(()=>{if(ST.view=="rep")draw()})},1500);
   await load()}
  catch(e){showErr(fail(e),e.code=="net"||e.code=="other"?init:null);if(["bad_token","revoked","expired"].includes(e.code))relink()}}
 async function loadWeeks(){try{const j=await rpc("parent_weeks",{p_token:TOKEN});ST.weeks=(j.weeks||[]).map(String);if(ST.kids.length)draw()}catch(e){}}
@@ -263,18 +265,33 @@ async function load(){
  draw()}
 /* own reactions and comments come from the server (parent_mine), cached in memory */
 let MINE={};
+/* ---------- offline outbox: reactions/comments saved on the phone, sent when online ---------- */
+function obK(){return"hq_ob:"+th()}
+function obGet(){try{return JSON.parse(localStorage.getItem(obK())||"[]")}catch(e){return[]}}
+function obSet(a){try{if(a.length)localStorage.setItem(obK(),JSON.stringify(a));else localStorage.removeItem(obK())}catch(e){}}
+function obAdd(o){const a=obGet();a.push(Object.assign({id:Date.now()+"-"+Math.random().toString(36).slice(2,7)},o));obSet(a)}
+function obPending(sid,week,day,kind){return obGet().filter(x=>x.sid==sid&&x.week==week&&(x.day||null)==(day||null)&&x.kind==kind)}
+let OBBUSY=false;
+async function obFlush(){if(OBBUSY||navigator.onLine===false||!TOKEN)return;OBBUSY=true;let sent=0;
+ try{for(const it of obGet()){
+  try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:it.sid,p_week_start:it.week,p_day_date:it.day||null,p_kind:it.kind,p_comment:it.comment||null});sent++}
+  catch(e){if(e&&e.code=="already_reacted"){}else if(e&&(e.code=="net"||e.code=="other"))break;else if(e&&["bad_token","revoked","expired"].includes(e.code))break}
+  obSet(obGet().filter(x=>x.id!==it.id))}}
+ finally{OBBUSY=false}
+ if(sent){toast("وصلت "+nm(sent)+" رسالة محفوظة للمعلم");if(ST.kids.length)loadMine().then(draw)}}
 function mk(){return ST.sid+":"+ST.week}
 function mineList(){return MINE[mk()]||[]}
-async function loadMine(){const k=mk();try{const j=await rpc("parent_mine",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week});MINE[k]=j.items||[]}catch(e){MINE[k]=MINE[k]||[]}}
+async function loadMine(){const k=mk();try{const j=await rpc("parent_mine",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week});MINE[k]=(j.items||[]).concat(obGet().filter(x=>x.sid==ST.sid&&x.week==ST.week).map(x=>({kind:x.kind,day_date:x.day,comment:x.comment||null,pending:1})))}catch(e){MINE[k]=MINE[k]||[]}}
 function dk(day){return day||null}
 function hasHeart(day){return mineList().some(x=>x.kind=="mashallah"&&(x.day_date||null)==dk(day))}
-function myComments(day){return mineList().filter(x=>x.kind=="comment"&&(x.day_date||null)==dk(day)).map(x=>x.comment)}
+function myComments(day){return mineList().filter(x=>x.kind=="comment"&&(x.day_date||null)==dk(day))}
+function heartPend(day){return mineList().some(x=>x.kind=="mashallah"&&x.pending&&(x.day_date||null)==dk(day))}
 function addMine(o){const k=mk();MINE[k]=(MINE[k]||[]).concat([o])}
 const STT={heard:["سمّع","ok","✅"],not_heard:["لم يسمّع","bad","⚠️"],excused:["معذور","neu","📝"],absent:["غائب","bad","❌"],off:["إجازة","neu","🏖️"]};
 function reactBox(day){
  const on=hasHeart(day),cm=myComments(day);
- return'<div class="react"><button class="heart'+(on?" on":"")+'" data-a="heart" data-d="'+esc(day||"")+'"'+(on?" disabled":"")+'>'+(on?"❤️ أرسلت ما شاء الله":"🤍 ما شاء الله")+'</button><button class="btn s" data-a="cmt" data-d="'+esc(day||"")+'">💬 تعليق</button></div>'+
- '<div id="cb-'+esc(day||"week")+'"></div>'+cm.map(c=>'<div class="sent">✔ تعليقك: '+esc(c)+'</div>').join("")}
+ return'<div class="react"><button class="heart'+(on?" on":"")+'" data-a="heart" data-d="'+esc(day||"")+'"'+(on?" disabled":"")+'>'+(on?(heartPend(day)?"❤️ محفوظة، ستُرسل عند عودة الإنترنت":"❤️ أرسلت ما شاء الله"):"🤍 ما شاء الله")+'</button><button class="btn s" data-a="cmt" data-d="'+esc(day||"")+'">💬 تعليق</button></div>'+
+ '<div id="cb-'+esc(day||"week")+'"></div>'+cm.map(c=>'<div class="sent">'+(c.pending?'🕓 بانتظار الإنترنت: ':'✔ تعليقك: ')+esc(c.comment)+'</div>').join("")}
 function honorCard(){
  const H=ST.honor;if(!H||((H.hifz||[]).length+(H.commit||[]).length)==0)return"";
  const col=["#d9a21b","#9aa5a8","#b87333","#ddd","#ddd"];
@@ -491,8 +508,9 @@ document.addEventListener("click",async ev=>{
  else if(a=="tgl"){const d=b.dataset.d;if(ST.open[d])delete ST.open[d];else ST.open[d]=1;draw()}
  else if(a=="goto"){const d=b.dataset.d;ST.open[d]=1;draw();const e=document.getElementById("d-"+d);if(e){const t=$("#top").offsetHeight+6;window.scrollTo({top:e.getBoundingClientRect().top+scrollY-t,behavior:"smooth"})}}
  else if(a=="heart"){const d=b.dataset.d||null;b.disabled=true;
+  if(navigator.onLine===false||OFFT){obAdd({sid:ST.sid,week:ST.week,day:d,kind:"mashallah"});addMine({kind:"mashallah",day_date:d,comment:null,pending:1});toast("حُفظت وستصل للمعلم عند عودة الإنترنت ❤️");draw();return}
   try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"mashallah",p_comment:null});addMine({kind:"mashallah",day_date:d,comment:null});toast("وصلت ما شاء الله للمعلم ❤️");draw()}
-  catch(e){if(e.code=="already_reacted"){addMine({kind:"mashallah",day_date:d,comment:null});draw()}else b.disabled=false;toast(fail(e))}}
+  catch(e){if(e.code=="already_reacted"){addMine({kind:"mashallah",day_date:d,comment:null});draw()}else if(e.code=="net"){obAdd({sid:ST.sid,week:ST.week,day:d,kind:"mashallah"});addMine({kind:"mashallah",day_date:d,comment:null,pending:1});toast("حُفظت وستصل للمعلم عند عودة الإنترنت ❤️");draw()}else{b.disabled=false;toast(fail(e))}}}
  else if(a=="cmt"){const d=b.dataset.d||"",box=document.getElementById("cb-"+(d||"week"));
   if(box.firstChild){box.innerHTML="";return}
   box.innerHTML='<textarea class="cm" maxlength="200" placeholder="اكتب تعليقك (حتى ٢٠٠ حرف)"></textarea><div class="mu cnt">٠ / ٢٠٠</div><button class="btn" data-a="send" data-d="'+esc(d)+'">إرسال</button>';
@@ -500,11 +518,13 @@ document.addEventListener("click",async ev=>{
  else if(a=="send"){const d=b.dataset.d||null,box=document.getElementById("cb-"+(d||"week")),t=box.querySelector("textarea"),v=t.value.trim();
   if(!v){toast("اكتب تعليقاً أولاً");return}
   b.disabled=true;
+  const q=()=>{obAdd({sid:ST.sid,week:ST.week,day:d,kind:"comment",comment:v});addMine({kind:"comment",day_date:d,comment:v,pending:1});toast("حُفظ تعليقك وسيصل للمعلم عند عودة الإنترنت");draw()};
+  if(navigator.onLine===false||OFFT){q();return}
   try{await rpc("parent_interact",{p_token:TOKEN,p_student_id:ST.sid,p_week_start:ST.week,p_day_date:d,p_kind:"comment",p_comment:v});
    addMine({kind:"comment",day_date:d,comment:v});toast("تم إرسال تعليقك");draw()}
-  catch(e){b.disabled=false;toast(fail(e))}}
+  catch(e){if(e.code=="net")q();else{b.disabled=false;toast(fail(e))}}}
 });
-addEventListener("online",()=>{if(OFFT||!ST.kids.length)init()});
-setInterval(()=>{if(navigator.onLine!==false&&(OFFT||!ST.kids.length)&&!ST.busy)init()},60000);
+addEventListener("online",()=>{if(OFFT||!ST.kids.length)init();obFlush()});
+setInterval(()=>{if(navigator.onLine!==false&&(OFFT||!ST.kids.length)&&!ST.busy)init();obFlush()},60000);
 init();
 </script></body></html>
